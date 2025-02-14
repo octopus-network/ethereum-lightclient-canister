@@ -13,7 +13,6 @@ pub struct NimbusRpc {
     rpc: String,
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl ConsensusRpc for NimbusRpc {
     fn new(rpc: &str) -> Self {

@@ -10,7 +10,6 @@ use crate::types::CallOpts;
 pub mod http_rpc;
 pub mod mock_rpc;
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 pub trait ExecutionRpc: Send + Clone + Sync + 'static {
     fn new(rpc: &str) -> Result<Self>

@@ -14,17 +14,6 @@ use consensus::{types::Header, ConsensusClient};
 use execution::types::{CallOpts, ExecutionBlock};
 use log::{debug, error, info, warn};
 
-#[cfg(not(target_arch = "wasm32"))]
-use std::net::IpAddr;
-#[cfg(not(target_arch = "wasm32"))]
-use std::path::PathBuf;
-#[cfg(not(target_arch = "wasm32"))]
-use tokio::spawn;
-#[cfg(not(target_arch = "wasm32"))]
-use tokio::task::AbortHandle;
-#[cfg(not(target_arch = "wasm32"))]
-use tokio::time::sleep;
-
 #[cfg(target_arch = "wasm32")]
 use ic_cdk::spawn;
 #[cfg(target_arch = "wasm32")]
@@ -36,21 +25,12 @@ use crate::database::Database;
 use crate::errors::NodeError;
 use crate::node::Node;
 
-#[cfg(not(target_arch = "wasm32"))]
-use crate::rpc::Rpc;
-
 #[derive(Default)]
 pub struct ClientBuilder {
     network: Option<Network>,
     consensus_rpc: Option<String>,
     execution_rpc: Option<String>,
     checkpoint: Option<Vec<u8>>,
-    #[cfg(not(target_arch = "wasm32"))]
-    rpc_bind_ip: Option<IpAddr>,
-    #[cfg(not(target_arch = "wasm32"))]
-    rpc_port: Option<u16>,
-    #[cfg(not(target_arch = "wasm32"))]
-    data_dir: Option<PathBuf>,
     config: Option<Config>,
     fallback: Option<String>,
     load_external_fallback: bool,
@@ -81,18 +61,6 @@ impl ClientBuilder {
         let checkpoint = hex::decode(checkpoint.strip_prefix("0x").unwrap_or(checkpoint))
             .expect("cannot parse checkpoint");
         self.checkpoint = Some(checkpoint);
-        self
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn rpc_port(mut self, port: u16) -> Self {
-        self.rpc_port = Some(port);
-        self
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn data_dir(mut self, data_dir: PathBuf) -> Self {
-        self.data_dir = Some(data_dir);
         self
     }
 
@@ -157,33 +125,6 @@ impl ClientBuilder {
             base_config.default_checkpoint.clone()
         };
 
-        #[cfg(not(target_arch = "wasm32"))]
-        let rpc_bind_ip = if self.rpc_bind_ip.is_some() {
-            self.rpc_bind_ip
-        } else if let Some(config) = &self.config {
-            config.rpc_bind_ip
-        } else {
-            None
-        };
-
-        #[cfg(not(target_arch = "wasm32"))]
-        let rpc_port = if self.rpc_port.is_some() {
-            self.rpc_port
-        } else if let Some(config) = &self.config {
-            config.rpc_port
-        } else {
-            None
-        };
-
-        #[cfg(not(target_arch = "wasm32"))]
-        let data_dir = if self.data_dir.is_some() {
-            self.data_dir
-        } else if let Some(config) = &self.config {
-            config.data_dir.clone()
-        } else {
-            None
-        };
-
         let fallback = if self.fallback.is_some() {
             self.fallback
         } else if let Some(config) = &self.config {
@@ -209,16 +150,11 @@ impl ClientBuilder {
             execution_rpc,
             checkpoint,
             default_checkpoint,
-            #[cfg(not(target_arch = "wasm32"))]
-            rpc_bind_ip,
+
             #[cfg(target_arch = "wasm32")]
             rpc_bind_ip: None,
-            #[cfg(not(target_arch = "wasm32"))]
-            rpc_port,
             #[cfg(target_arch = "wasm32")]
             rpc_port: None,
-            #[cfg(not(target_arch = "wasm32"))]
-            data_dir,
             #[cfg(target_arch = "wasm32")]
             data_dir: None,
             chain: base_config.chain,
@@ -235,13 +171,9 @@ impl ClientBuilder {
 
 pub struct Client<DB: Database> {
     node: Arc<ArcSwap<Node>>,
-    #[cfg(not(target_arch = "wasm32"))]
-    rpc: Option<Rpc>,
     db: DB,
     fallback: Option<String>,
     load_external_fallback: bool,
-    #[cfg(not(target_arch = "wasm32"))]
-    abort_handle: Mutex<Option<AbortHandle>>,
     #[cfg(target_arch = "wasm32")]
     timer_id: Mutex<Option<TimerId>>,
 }
@@ -258,34 +190,18 @@ impl<DB: Database> Client<DB> {
         let node = Node::new(config.clone())?;
         let node = Arc::new(ArcSwap::from(Arc::new(node)));
 
-        #[cfg(not(target_arch = "wasm32"))]
-        let mut rpc: Option<Rpc> = None;
-
-        #[cfg(not(target_arch = "wasm32"))]
-        if config.rpc_bind_ip.is_some() || config.rpc_port.is_some() {
-            rpc = Some(Rpc::new(node.clone(), config.rpc_bind_ip, config.rpc_port));
-        }
 
         Ok(Client {
             node,
-            #[cfg(not(target_arch = "wasm32"))]
-            rpc,
             db,
             fallback: config.fallback.clone(),
             load_external_fallback: config.load_external_fallback,
-            #[cfg(not(target_arch = "wasm32"))]
-            abort_handle: Mutex::new(None),
             #[cfg(target_arch = "wasm32")]
             timer_id: Mutex::new(None),
         })
     }
 
     pub async fn start(&mut self) -> Result<()> {
-        #[cfg(not(target_arch = "wasm32"))]
-        if let Some(rpc) = &mut self.rpc {
-            rpc.start().await?;
-        }
-
         let mut node = Node::clone(&*self.node.load());
 
         let sync_res = node.sync().await;
@@ -318,31 +234,6 @@ impl<DB: Database> Client<DB> {
         self.start_advance_thread();
 
         Ok(())
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    fn start_advance_thread(&self) {
-        let arc_swap_node = self.node.clone();
-
-        let handle = spawn(async move {
-            loop {
-                debug!("Advancing the client");
-
-                let mut node = Node::clone(&*arc_swap_node.load());
-
-                match node.advance().await {
-                    Ok(_) => arc_swap_node.store(Arc::new(node)),
-                    Err(e) => warn!("advancing node error: {e}"),
-                }
-
-                debug!("Advancing finished");
-
-                let next_update = arc_swap_node.load().duration_until_next_update();
-                sleep(next_update).await;
-            }
-        });
-
-        *self.abort_handle.lock().unwrap() = Some(handle.abort_handle());
     }
 
     #[cfg(target_arch = "wasm32")]
@@ -466,14 +357,6 @@ impl<DB: Database> Client<DB> {
     }
 
     pub async fn shutdown(&self) {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            let handle = self.abort_handle.lock().unwrap().take();
-
-            if let Some(handle) = handle {
-                handle.abort();
-            }
-        }
 
         #[cfg(target_arch = "wasm32")]
         {

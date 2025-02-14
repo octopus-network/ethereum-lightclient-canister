@@ -249,21 +249,6 @@ impl<'a, R: ExecutionRpc> ProofDB<'a, R> {
     }
 
     fn get_account(&mut self, address: Address, slots: &[H256]) -> Result<Account> {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            let execution = self.execution.clone();
-            let payload = self.current_payload.clone();
-            let slots = slots.to_owned();
-
-            tokio::task::block_in_place(move || {
-                tokio::runtime::Handle::current().block_on(execution.get_account(
-                    &address,
-                    Some(&slots),
-                    &payload,
-                ))
-            })
-        }
-
         #[cfg(target_arch = "wasm32")]
         {
             // Inform the caller which slot is missing.

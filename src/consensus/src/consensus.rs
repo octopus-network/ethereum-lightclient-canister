@@ -577,12 +577,6 @@ impl<R: ConsensusRpc> ConsensusClient<R> {
 }
 
 fn duration_since_epoch() -> std::time::Duration {
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-    }
 
     #[cfg(target_arch = "wasm32")]
     {
