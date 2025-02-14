@@ -9,10 +9,7 @@ use interface::{
 };
 use log::{debug, error};
 
-use crate::stable_memory::{
-    init_stable_cell_default, load_static_string, save_static_string, StableCell,
-    LAST_CHECKPOINT_ID, LAST_CONSENSUS_RPC_URL_ID, LAST_EXECUTION_RPC_URL_ID, LAST_NETWORK_ID,
-};
+use crate::state::{mutate_state, read_state};
 use crate::utils::IntoCallOpts;
 
 mod erc20;
@@ -21,13 +18,9 @@ mod helios;
 mod random;
 mod stable_memory;
 mod utils;
+mod state;
+mod storable_structures;
 
-thread_local! {
-    static LAST_NETWORK: RefCell<StableCell<String>> = RefCell::new(init_stable_cell_default(LAST_NETWORK_ID));
-    static LAST_CONSENSUS_RPC_URL: RefCell<StableCell<String>> = RefCell::new(init_stable_cell_default(LAST_CONSENSUS_RPC_URL_ID));
-    static LAST_EXECUTION_RPC_URL: RefCell<StableCell<String>> = RefCell::new(init_stable_cell_default(LAST_EXECUTION_RPC_URL_ID));
-    static LAST_CHECKPOINT: RefCell<StableCell<String>> = RefCell::new(init_stable_cell_default(LAST_CHECKPOINT_ID));
-}
 
 #[init]
 async fn init() {
@@ -51,14 +44,11 @@ async fn setup(request: SetupRequest) {
         request.network,
         &request.consensus_rpc_url,
         &request.execution_rpc_url,
-        request.checkpoint.as_deref(),
+        request.checkpoint,
     )
     .await
     .expect("starting client failed");
 
-    save_static_string(&LAST_NETWORK, request.network.to_string());
-    save_static_string(&LAST_CONSENSUS_RPC_URL, request.consensus_rpc_url);
-    save_static_string(&LAST_EXECUTION_RPC_URL, request.execution_rpc_url);
 }
 
 #[query]
@@ -112,7 +102,7 @@ async fn pre_upgrade() {
     debug!("Stopping client");
 
     let checkpoint = helios::get_last_checkpoint();
-    save_static_string(&LAST_CHECKPOINT, checkpoint);
+    mutate_state(|s|s.last_checkpoint = checkpoint);
 
     helios::shutdown().await;
 
@@ -127,38 +117,26 @@ fn post_upgrade() {
     // Client will be started from a timer in a second.
     set_timer(std::time::Duration::from_secs(1), || {
         ic_cdk::spawn(async move {
-            let Some(network) = load_static_string(&LAST_NETWORK) else {
-                return;
-            };
 
-            let Ok(network) = network.parse::<Network>() else {
-                error!("Failed to parse network: {network}. Use `setup` to initalize canister.");
-                return;
-            };
 
-            let Some(consensus_rpc_url) = load_static_string(&LAST_CONSENSUS_RPC_URL) else {
-                return;
-            };
 
-            let Some(execution_rpc_url) = load_static_string(&LAST_EXECUTION_RPC_URL) else {
-                return;
-            };
-
-            let checkpoint = load_static_string(&LAST_CHECKPOINT);
+            let (consensus_rpc_url, execution_rpc_url) = read_state(|s|(s.consensus_rpc.clone(), s.execution_rpc.clone()));
+            let network = Network::Mainnet;
+            let checkpoint = read_state(|s|s.last_checkpoint.clone());
 
             debug!(
-                "Resuming client with: network = {}, execution_rpc_url = {}, consensus_rpc_url = {}, checkpoint: {}",
+                "Resuming client with: network = {}, execution_rpc_url = {}, consensus_rpc_url = {}, checkpoint: {:?}",
                 network,
                 &execution_rpc_url,
                 &consensus_rpc_url,
-                &checkpoint.as_deref().unwrap_or("None"),
+                &checkpoint,
             );
 
             helios::start_client(
                 network,
                 &consensus_rpc_url,
                 &execution_rpc_url,
-                checkpoint.as_deref(),
+                checkpoint,
             )
             .await
             .expect("starting client failed");

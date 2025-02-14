@@ -31,11 +31,8 @@ pub(crate) async fn start_client(
     network: Network,
     consensus_rpc_url: &str,
     execution_rpc_url: &str,
-    checkpoint: Option<&str>,
+    checkpoint: Option<String>
 ) -> Result<()> {
-    if HELIOS.with(|helios| helios.borrow().is_some()) {
-        bail!("Client already started");
-    }
 
     let network = match network {
         Network::Mainnet => HeliosNetwork::MAINNET,
@@ -54,7 +51,7 @@ pub(crate) async fn start_client(
         .network(network)
         .consensus_rpc(consensus_rpc_url)
         .execution_rpc(execution_rpc_url)
-        .checkpoint(&checkpoint)
+        .checkpoint(checkpoint.as_str())
         .load_external_fallback()
         .build()
         .wrap_err("Client setup failed")?;
