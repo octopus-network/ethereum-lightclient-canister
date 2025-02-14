@@ -585,7 +585,6 @@ dependencies = [
 [[package]]
 name = "client"
 version = "0.4.1"
-source = "git+https://github.com/octopus-network/helios?rev=62c7237#62c7237c592025c028a32046a766c2b6780d114e"
 dependencies = [
  "arc-swap",
  "common",
@@ -619,7 +618,6 @@ dependencies = [
 [[package]]
 name = "common"
 version = "0.4.1"
-source = "git+https://github.com/octopus-network/helios?rev=62c7237#62c7237c592025c028a32046a766c2b6780d114e"
 dependencies = [
  "candid",
  "ethers-core",
@@ -636,7 +634,6 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.4.1"
-source = "git+https://github.com/octopus-network/helios?rev=62c7237#62c7237c592025c028a32046a766c2b6780d114e"
 dependencies = [
  "common",
  "ethers-core",
@@ -657,7 +654,6 @@ dependencies = [
 [[package]]
 name = "consensus"
 version = "0.4.1"
-source = "git+https://github.com/octopus-network/helios?rev=62c7237#62c7237c592025c028a32046a766c2b6780d114e"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1200,7 +1196,6 @@ checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 [[package]]
 name = "execution"
 version = "0.4.1"
-source = "git+https://github.com/octopus-network/helios?rev=62c7237#62c7237c592025c028a32046a766c2b6780d114e"
 dependencies = [
  "async-trait",
  "bytes",
