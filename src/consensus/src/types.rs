@@ -619,3 +619,4 @@ enum LightClientHeader {
 struct Beacon {
     beacon: Header,
 }
+

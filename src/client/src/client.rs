@@ -20,6 +20,7 @@ use ic_cdk::spawn;
 use ic_cdk_timers::{clear_timer, set_timer_interval, TimerId};
 #[cfg(target_arch = "wasm32")]
 use std::time::Duration;
+use serde::{Deserialize, Serialize};
 
 use crate::database::Database;
 use crate::errors::NodeError;
@@ -169,13 +170,12 @@ impl ClientBuilder {
     }
 }
 
+
 pub struct Client<DB: Database> {
     node: Arc<ArcSwap<Node>>,
     db: DB,
     fallback: Option<String>,
     load_external_fallback: bool,
-    #[cfg(target_arch = "wasm32")]
-    timer_id: Mutex<Option<TimerId>>,
 }
 
 impl<DB: Database> Client<DB> {
@@ -196,8 +196,6 @@ impl<DB: Database> Client<DB> {
             db,
             fallback: config.fallback.clone(),
             load_external_fallback: config.load_external_fallback,
-            #[cfg(target_arch = "wasm32")]
-            timer_id: Mutex::new(None),
         })
     }
 
@@ -264,8 +262,6 @@ impl<DB: Database> Client<DB> {
                 debug!("Advancing finished");
             });
         });
-
-        *self.timer_id.lock().unwrap() = Some(timer_id);
     }
 
     async fn boot_from_fallback(&self, node: &mut Node) -> eyre::Result<()> {
@@ -357,16 +353,6 @@ impl<DB: Database> Client<DB> {
     }
 
     pub async fn shutdown(&self) {
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            let id = self.timer_id.lock().unwrap().take();
-
-            if let Some(id) = id {
-                clear_timer(id);
-            }
-        }
-
         self.save_last_checkpoint();
     }
 

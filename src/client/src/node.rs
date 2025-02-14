@@ -55,7 +55,7 @@ impl Node {
             payloads,
             finalized_payloads,
             current_slot: None,
-            history_size: 64,
+            history_size: 36000,
         })
     }
 

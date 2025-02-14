@@ -24,3 +24,13 @@ common = { path = "../common" }
 config = { path = "../config" }
 
 ic-cdk = "0.10.0"
+
+alloy = { version = "0.9.1", features = [
+    "consensus",
+    "rpc-types",
+    "ssz",
+    "rlp",
+    "k256",
+    "eips",
+] }
+alloy-rlp = "0.3.10"
