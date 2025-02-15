@@ -2,18 +2,14 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::str;
 
-use ethers_contract::EthCall;
-use ethers_core::abi::{AbiDecode, AbiEncode};
-use ethers_core::types::Address;
-use eyre::{bail, eyre, Result, WrapErr};
-use helios_client::database::ConfigDB;
-use helios_client::{Client, ClientBuilder};
-use helios_common::http;
-use helios_common::types::BlockTag;
-use helios_config::Network as HeliosNetwork;
-use helios_execution::types::CallOpts;
-use interface::Network;
+use eyre::{eyre, Result, WrapErr};
 use serde_json::Value;
+
+use helios_client::{Client, ClientBuilder};
+use helios_client::database::ConfigDB;
+use helios_common::http;
+use helios_config::Network as HeliosNetwork;
+use interface::Network;
 
 thread_local! {
     static HELIOS: RefCell<Option<Rc<Client<ConfigDB>>>> = RefCell::new(None);
@@ -79,26 +75,6 @@ pub(crate) async fn shutdown() {
     }
 
     HELIOS.with(|helios| helios.borrow_mut().take());
-}
-
-pub(crate) async fn call<T, R>(contract: Address, call_data: T) -> Result<R>
-where
-    T: EthCall + AbiEncode,
-    R: AbiDecode,
-{
-    let opts = CallOpts {
-        from: None,
-        to: Some(contract),
-        gas: None,
-        gas_price: None,
-        value: None,
-        data: Some(call_data.encode()),
-    };
-
-    let bytes = client().call(&opts, BlockTag::Latest).await?;
-    let ret = R::decode(bytes)?;
-
-    Ok(ret)
 }
 
 async fn fetch_latest_checkpoint(consensus_rpc_url: &str) -> Result<String> {

@@ -16,7 +16,10 @@ thiserror = "1.0.37"
 
 common = { path = "../common" }
 consensus = { path = "../consensus" }
-execution = { path = "../execution" }
+helios-consensus-core = { path = "../consensus/consensus-core"}
+helios-core = {path = "../core"}
+#execution = { path = "../execution" }
 config = { path = "../config" }
 ic-cdk-timers = "0.4.0"
 ic-cdk = "0.10.0"
+getrandom = { version = "0.2", features = ["js"] }

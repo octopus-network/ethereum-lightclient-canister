@@ -1,5 +1,15 @@
 [workspace]
-members = ["src/*"]
+members = [
+  "src/consensus",
+  "src/core",
+  "src/interface",
+  "src/config",
+  "src/ethereum-lightclient-canister",
+ # "src/execution",
+  "src/client",
+  "src/common",
+  "src/contracts-abi",
+  "src/consensus/consensus-core"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -12,17 +22,65 @@ eyre = "0.6.8"
 helios_client = { package = "client", path = "src/client"}
 helios_common = { package = "common", path = "src/common" }
 helios_config = { package = "config", path = "src/config" }
-helios_execution = { package = "execution", path = "src/execution" }
+helios_consensus_core = {package = "helios-consensus-core", path = "src/consensus/consensus-core"}
 interface = { path = "src/interface" }
+
+# consensus
+ssz_types = "0.10"
+ethereum_ssz_derive = "0.8"
+ethereum_ssz = "0.8"
+tree_hash_derive = "0.9.0"
+tree_hash = "0.9.0"
+sha2 = "0.9"
+bls12_381 = { version = "0.8.0", features = ["experimental"] }
+
+# execution
+alloy = { version = "0.9.1", features = [
+  "rpc-types",
+  "consensus",
+  "rlp",
+  "k256",
+  "provider-http",
+  "sol-types",
+  "network",
+  "ssz",
+  "json-rpc",
+  "signers",
+] }
+alloy-trie = "0.7.8"
+op-alloy-rpc-types = "0.9.0"
+revm = { version = "19.4.0", default-features = false, features = [
+  "std",
+  "serde",
+  "optional_block_gas_limit",
+  "optional_eip3607",
+  "optional_no_base_fee",
+] }
+
+# async/futures
+async-trait = "0.1.57"
+futures = "0.3.23"
+tokio = { version = "1", features = ["rt", "sync", "macros"] }
+
+# io
+reqwest = { version = "0.12.4", features = ["json"] }
+url = { version = "2.5.2", features = ["serde"] }
+serde = { version = "1.0.143", features = ["derive"] }
+serde_json = "1.0.85"
+
+hex = "0.4.3"
+toml = "0.5.9"
+tracing = "0.1.37"
+chrono = "0.4.23"
+thiserror = "1.0.37"
+superstruct = "0.7.0"
+openssl = { version = "0.10", features = ["vendored"] }
+zduny-wasm-timer = "0.2.8"
+retri = "0.1.0"
+typenum = "1.17.0"
 
 [profile.release]
 opt-level = "z"
 lto = true
 codegen-units = 1
 
-# Uncomment to apply local changes of Helios
-#[patch.'https://github.com/eigerco/helios']
-#client = { path = "../helios/client" }
-#common = { path = "../helios/common" }
-#config = { path = "../helios/config" }
-#execution = { path = "../helios/execution" }

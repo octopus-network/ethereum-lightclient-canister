@@ -4,7 +4,7 @@ use candid::Nat;
 use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
 use ic_cdk_timers::set_timer;
 use interface::{
-    Address, Erc20BalanceOfRequest, Erc721OwnerOfRequest, EstimateGasRequest, Network,
+    Address, Erc20BalanceOfRequest, Erc721OwnerOfRequest, Network,
     SetupRequest, U256,
 };
 use log::{debug, error};
@@ -67,34 +67,6 @@ fn get_gas_price() -> U256 {
     let gas_price = helios.get_gas_price().expect("get_gas_price failed");
 
     gas_price.into()
-}
-
-#[update]
-async fn estimate_gas(request: EstimateGasRequest) -> U256 {
-    let helios = helios::client();
-
-    let gas_cost_estimation = helios
-        .estimate_gas(&request.into_call_opts())
-        .await
-        .expect("estimate_gas failed");
-
-    gas_cost_estimation.into()
-}
-
-#[update]
-async fn erc20_balance_of(request: Erc20BalanceOfRequest) -> U256 {
-    erc20::balance_of(request.contract.into(), request.account.into())
-        .await
-        .expect("erc20::balance_of failed")
-        .into()
-}
-
-#[update]
-async fn erc721_owner_of(request: Erc721OwnerOfRequest) -> Address {
-    erc721::owner_of(request.contract.into(), request.token_id.into())
-        .await
-        .expect("erc721::owner_of failed")
-        .into()
 }
 
 #[pre_upgrade]

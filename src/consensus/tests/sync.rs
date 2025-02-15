@@ -1,42 +1,31 @@
 use std::sync::Arc;
 
-use config::{networks, Config};
-use consensus::{rpc::mock_rpc::MockRpc, ConsensusClient};
+use alloy::primitives::b256;
+use helios_consensus_core::consensus_spec::MainnetConsensusSpec;
+use helios_ethereum::config::{networks, Config};
+use helios_ethereum::{consensus::ConsensusClient, database::ConfigDB, rpc::mock_rpc::MockRpc};
 
-async fn setup() -> ConsensusClient<MockRpc> {
-    let base_config = networks::goerli();
+async fn setup() -> ConsensusClient<MainnetConsensusSpec, MockRpc, ConfigDB> {
+    let base_config = networks::mainnet();
     let config = Config {
         consensus_rpc: String::new(),
         execution_rpc: String::new(),
         chain: base_config.chain,
         forks: base_config.forks,
         max_checkpoint_age: 123123123,
+        checkpoint: Some(b256!(
+            "5afc212a7924789b2bc86acad3ab3a6ffb1f6e97253ea50bee7f4f51422c9275"
+        )),
         ..Default::default()
     };
 
-    let checkpoint =
-        hex::decode("1e591af1e90f2db918b2a132991c7c2ee9a4ab26da496bd6e71e4f0bd65ea870").unwrap();
-
-    ConsensusClient::new("testdata/", &checkpoint, Arc::new(config)).unwrap()
+    ConsensusClient::new("testdata/", Arc::new(config)).unwrap()
 }
 
 #[tokio::test]
 async fn test_sync() {
-    let mut client = setup().await;
-    client.sync().await.unwrap();
+    let client = setup().await;
 
-    let head = client.get_header();
-    assert_eq!(head.slot, 3818196);
-
-    let finalized_head = client.get_finalized_header();
-    assert_eq!(finalized_head.slot, 3818112);
-}
-
-#[tokio::test]
-async fn test_get_payload() {
-    let mut client = setup().await;
-    client.sync().await.unwrap();
-
-    let payload = client.get_execution_payload(&None).await.unwrap();
-    assert_eq!(*payload.block_number(), 7530932);
+    let block = client.block_recv.unwrap().recv().await.unwrap();
+    assert_eq!(block.header.number, 17923112_u64);
 }

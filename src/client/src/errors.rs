@@ -1,13 +1,10 @@
 use common::errors::BlockNotFoundError;
-use execution::errors::EvmError;
 use eyre::Report;
 use thiserror::Error;
 
 /// Errors that can occur during Node calls
 #[derive(Debug, Error)]
 pub enum NodeError {
-    #[error(transparent)]
-    ExecutionEvmError(#[from] EvmError),
 
     #[error("execution error: {0}")]
     ExecutionError(Report),

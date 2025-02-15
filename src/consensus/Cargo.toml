@@ -1,36 +1,51 @@
 [package]
 name = "consensus"
-version = "0.4.1"
+version = "0.8.0"
 edition = "2021"
 
 [dependencies]
-eyre = "0.6.8"
-futures = "0.3.23"
-serde = { version = "1.0.143", features = ["derive"] }
-serde_json = "1.0.85"
-hex = "0.4.3"
-ssz-rs = { git = "https://github.com/ralexstokes/ssz-rs", rev = "d09f55b4f8554491e3431e01af1c32347a8781cd" }
-milagro_bls = { git = "https://github.com/Snowfork/milagro_bls" }
-ethers-core = { version = "2.0.8", default-features = false }
-bytes = "1.2.1"
-toml = "0.5.9"
-async-trait = "0.1.57"
-log = "0.4.17"
-chrono = { version = "0.4.23", default-features = false }
-thiserror = "1.0.37"
-superstruct = "0.7.0"
+# consensus
+alloy-trie.workspace = true
+tree_hash.workspace = true
+revm.workspace = true
 
-common = { path = "../common" }
-config = { path = "../config" }
+# config
+figment = { version = "0.10.7", features = ["toml", "env"] }
+serde_yaml = "0.9.14"
+strum = { version = "0.26.2", features = ["derive"] }
+url = {version = "2.5.0", features = ["serde"] }
 
-ic-cdk = "0.10.0"
+# async/futures
+tokio.workspace = true
+futures.workspace = true
+async-trait.workspace = true
 
-alloy = { version = "0.9.1", features = [
-    "consensus",
-    "rpc-types",
-    "ssz",
-    "rlp",
-    "k256",
-    "eips",
-] }
-alloy-rlp = "0.3.10"
+# io
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+#misc
+alloy.workspace = true
+eyre.workspace = true
+hex.workspace = true
+tracing.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+superstruct.workspace = true
+retri.workspace = true
+typenum.workspace = true
+
+helios-core = { path = "../core" }
+helios-consensus-core = { path = "consensus-core" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4.37"
+getrandom = { version = "0.2.1", features = ["js"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+openssl.workspace = true
+dirs = "5.0.1"
+
+[target.wasm32-unknown-unknown.dependencies]
+parking_lot = { version = "0.12.2" }

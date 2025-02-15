@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use arc_swap::ArcSwap;
 use config::networks::Network;
-use consensus::errors::ConsensusError;
+use helios_consensus_core::errors::ConsensusError;
 use ethers_core::types::{
     Address, FeeHistory, Filter, Log, SyncingStatus, Transaction, TransactionReceipt, H256, U256,
 };
@@ -10,8 +10,7 @@ use eyre::{eyre, Result};
 
 use common::types::BlockTag;
 use config::{CheckpointFallback, Config};
-use consensus::{types::Header, ConsensusClient};
-use execution::types::{CallOpts, ExecutionBlock};
+use consensus::{ ConsensusClient};
 use log::{debug, error, info, warn};
 
 #[cfg(target_arch = "wasm32")]
@@ -356,66 +355,14 @@ impl<DB: Database> Client<DB> {
         self.save_last_checkpoint();
     }
 
-    pub async fn call(&self, opts: &CallOpts, block: BlockTag) -> Result<Vec<u8>> {
-        self.node
-            .load_full()
-            .call(opts, block)
-            .await
-            .map_err(|err| err.into())
-    }
 
-    pub async fn estimate_gas(&self, opts: &CallOpts) -> Result<u64> {
-        self.node
-            .load_full()
-            .estimate_gas(opts)
-            .await
-            .map_err(|err| err.into())
-    }
-
-    pub async fn get_balance(&self, address: &Address, block: BlockTag) -> Result<U256> {
-        self.node.load_full().get_balance(address, block).await
-    }
-
-    pub async fn get_nonce(&self, address: &Address, block: BlockTag) -> Result<u64> {
-        self.node.load_full().get_nonce(address, block).await
-    }
-
-    pub fn get_block_transaction_count_by_hash(&self, hash: &Vec<u8>) -> Result<u64> {
-        self.node.load().get_block_transaction_count_by_hash(hash)
-    }
-
-    pub fn get_block_transaction_count_by_number(&self, block: BlockTag) -> Result<u64> {
-        self.node
-            .load()
-            .get_block_transaction_count_by_number(block)
-    }
-
-    pub async fn get_code(&self, address: &Address, block: BlockTag) -> Result<Vec<u8>> {
-        self.node.load_full().get_code(address, block).await
-    }
-
-    pub async fn get_storage_at(
-        &self,
-        address: &Address,
-        slot: H256,
-        block: BlockTag,
-    ) -> Result<U256> {
-        self.node
-            .load_full()
-            .get_storage_at(address, slot, block)
-            .await
-    }
-
-    pub async fn send_raw_transaction(&self, bytes: &[u8]) -> Result<H256> {
-        self.node.load_full().send_raw_transaction(bytes).await
-    }
-
-    pub async fn get_transaction_receipt(
+//TODO
+/*    pub async fn get_transaction_receipt(
         &self,
         tx_hash: &H256,
     ) -> Result<Option<TransactionReceipt>> {
         self.node.load_full().get_transaction_receipt(tx_hash).await
-    }
+    }*/
 
     pub async fn get_transaction_by_hash(&self, tx_hash: &H256) -> Result<Option<Transaction>> {
         self.node.load_full().get_transaction_by_hash(tx_hash).await
@@ -449,25 +396,6 @@ impl<DB: Database> Client<DB> {
             .await
     }
 
-    pub async fn get_block_by_number(
-        &self,
-        block: BlockTag,
-        full_tx: bool,
-    ) -> Result<Option<ExecutionBlock>> {
-        self.node
-            .load_full()
-            .get_block_by_number(block, full_tx)
-            .await
-    }
-
-    pub async fn get_block_by_hash(
-        &self,
-        hash: &Vec<u8>,
-        full_tx: bool,
-    ) -> Result<Option<ExecutionBlock>> {
-        self.node.load_full().get_block_by_hash(hash, full_tx).await
-    }
-
     pub async fn get_transaction_by_block_hash_and_index(
         &self,
         block_hash: &Vec<u8>,
@@ -485,10 +413,6 @@ impl<DB: Database> Client<DB> {
 
     pub fn syncing(&self) -> Result<SyncingStatus> {
         self.node.load().syncing()
-    }
-
-    pub fn get_header(&self) -> Result<Header> {
-        self.node.load().get_header()
     }
 
     pub fn get_coinbase(&self) -> Result<Address> {

@@ -9,3 +9,4 @@ doctest = false
 [dependencies]
 ethers-contract = { workspace = true }
 ethers-core = { workspace = true }
+getrandom = { version = "0.2", features = ["js"] }
