@@ -5,8 +5,6 @@ members = [
   "src/interface",
   "src/config",
   "src/ethereum-lightclient-canister",
- # "src/execution",
-  "src/client",
   "src/common",
   "src/contracts-abi",
   "src/consensus/consensus-core"]
@@ -19,7 +17,7 @@ ethers-contract = { version = "2.0.9", default-features = false, features = [
 ] }
 ethers-core = "2.0.9"
 eyre = "0.6.8"
-helios_client = { package = "client", path = "src/client"}
+#helios_client = { package = "client", path = "src/client"}
 helios_common = { package = "common", path = "src/common" }
 helios_config = { package = "config", path = "src/config" }
 helios_consensus_core = {package = "helios-consensus-core", path = "src/consensus/consensus-core"}

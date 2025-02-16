@@ -28,11 +28,8 @@ mod types;
 pub struct Config {
     pub consensus_rpc: String,
     pub execution_rpc: String,
-    pub rpc_bind_ip: Option<IpAddr>,
-    pub rpc_port: Option<u16>,
     pub default_checkpoint: B256,
     pub checkpoint: Option<B256>,
-    pub data_dir: Option<PathBuf>,
     pub chain: ChainConfig,
     pub forks: Forks,
     pub execution_forks: ForkSchedule,
@@ -80,15 +77,12 @@ impl Config {
 
     pub fn to_base_config(&self) -> BaseConfig {
         BaseConfig {
-            rpc_bind_ip: self.rpc_bind_ip.unwrap_or(IpAddr::V4(Ipv4Addr::LOCALHOST)),
-            rpc_port: self.rpc_port.unwrap_or(8545),
             consensus_rpc: Some(self.consensus_rpc.clone()),
             default_checkpoint: self.default_checkpoint,
             chain: self.chain.clone(),
             forks: self.forks.clone(),
             execution_forks: self.execution_forks,
             max_checkpoint_age: self.max_checkpoint_age,
-            data_dir: self.data_dir.clone(),
             load_external_fallback: self.load_external_fallback,
             strict_checkpoint_age: self.strict_checkpoint_age,
         }
@@ -98,8 +92,6 @@ impl Config {
 impl From<BaseConfig> for Config {
     fn from(base: BaseConfig) -> Self {
         Config {
-            rpc_bind_ip: Some(base.rpc_bind_ip),
-            rpc_port: Some(base.rpc_port),
             consensus_rpc: base.consensus_rpc.unwrap_or_default(),
             execution_rpc: String::new(),
             checkpoint: None,
@@ -108,7 +100,6 @@ impl From<BaseConfig> for Config {
             forks: base.forks,
             execution_forks: base.execution_forks,
             max_checkpoint_age: base.max_checkpoint_age,
-            data_dir: base.data_dir,
             fallback: None,
             load_external_fallback: base.load_external_fallback,
             strict_checkpoint_age: base.strict_checkpoint_age,

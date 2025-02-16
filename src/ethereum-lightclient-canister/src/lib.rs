@@ -17,8 +17,9 @@ mod stable_memory;
 mod utils;
 mod state;
 mod storable_structures;
-mod rpc;
+mod ic_consensus_rpc;
 mod consensus_types;
+mod ic_consensus_rpc_types;
 
 
 #[init]

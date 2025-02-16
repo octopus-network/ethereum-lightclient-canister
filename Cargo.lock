@@ -626,12 +626,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
 
 [[package]]
-name = "arc-swap"
-version = "1.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
-
-[[package]]
 name = "ark-ff"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1227,29 +1221,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "client"
-version = "0.4.1"
-dependencies = [
- "arc-swap",
- "common",
- "config",
- "consensus",
- "ethers-core",
- "eyre",
- "futures",
- "getrandom 0.2.15",
- "helios-consensus-core",
- "helios-core",
- "hex",
- "ic-cdk",
- "ic-cdk-timers",
- "log",
- "serde",
- "ssz-rs",
- "thiserror 1.0.69",
-]
-
-[[package]]
 name = "codespan-reporting"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1828,11 +1799,14 @@ dependencies = [
 name = "ethereum_lightclient_canister"
 version = "0.1.0"
 dependencies = [
+ "alloy",
  "anyhow",
+ "async-trait",
  "candid",
  "ciborium",
  "common",
  "config",
+ "consensus",
  "contracts-abi",
  "ethers-contract",
  "ethers-core",

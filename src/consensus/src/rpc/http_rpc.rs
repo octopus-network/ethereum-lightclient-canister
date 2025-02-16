@@ -131,47 +131,47 @@ impl<S: ConsensusSpec> ConsensusRpc<S> for HttpRpc {
 
 #[derive(Deserialize, Debug)]
 #[serde(bound = "S: ConsensusSpec")]
-struct BeaconBlockResponse<S: ConsensusSpec> {
-    data: BeaconBlockData<S>,
+pub struct BeaconBlockResponse<S: ConsensusSpec> {
+    pub data: BeaconBlockData<S>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(bound = "S: ConsensusSpec")]
-struct BeaconBlockData<S: ConsensusSpec> {
-    message: BeaconBlock<S>,
+pub struct BeaconBlockData<S: ConsensusSpec> {
+    pub message: BeaconBlock<S>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(bound = "S: ConsensusSpec")]
-struct UpdateData<S: ConsensusSpec> {
-    data: Update<S>,
+pub struct UpdateData<S: ConsensusSpec> {
+    pub data: Update<S>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(bound = "S: ConsensusSpec")]
-struct FinalityUpdateResponse<S: ConsensusSpec> {
-    data: FinalityUpdate<S>,
+pub struct FinalityUpdateResponse<S: ConsensusSpec> {
+    pub data: FinalityUpdate<S>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(bound = "S: ConsensusSpec")]
-struct OptimisticUpdateResponse<S: ConsensusSpec> {
-    data: OptimisticUpdate<S>,
+pub struct OptimisticUpdateResponse<S: ConsensusSpec> {
+    pub data: OptimisticUpdate<S>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(bound = "S: ConsensusSpec")]
-struct BootstrapResponse<S: ConsensusSpec> {
-    data: Bootstrap<S>,
+pub struct BootstrapResponse<S: ConsensusSpec> {
+    pub data: Bootstrap<S>,
 }
 
 #[derive(Deserialize, Debug)]
-struct SpecResponse {
-    data: Spec,
+pub struct SpecResponse {
+    pub data: Spec,
 }
 
 #[derive(Deserialize, Debug)]
-struct Spec {
+pub struct Spec {
     #[serde(rename = "DEPOSIT_NETWORK_ID")]
-    chain_id: u64,
+    pub chain_id: u64,
 }

@@ -78,7 +78,6 @@ pub fn mainnet() -> BaseConfig {
         default_checkpoint: b256!(
             "0d5144fae3e0059e1372e5fc8fc28b042f1e2b9e698a007d42856ca6766d6ceb"
         ),
-        rpc_port: 8545,
         consensus_rpc: Some("https://ethereum.operationsolarstorm.org".to_string()),
         chain: ChainConfig {
             chain_id: 1,
@@ -126,7 +125,6 @@ pub fn sepolia() -> BaseConfig {
         default_checkpoint: b256!(
             "4135bf01bddcfadac11143ba911f1c7f0772fdd6b87742b0bc229887bbf62b48"
         ),
-        rpc_port: 8545,
         consensus_rpc: None,
         chain: ChainConfig {
             chain_id: 11155111,
@@ -174,7 +172,6 @@ pub fn holesky() -> BaseConfig {
         default_checkpoint: b256!(
             "d8fad84478f4947c3d09cfefde36d09bb9e71217f650610a3eb730eba54cdf1f"
         ),
-        rpc_port: 8545,
         consensus_rpc: None,
         chain: ChainConfig {
             chain_id: 17000,
@@ -222,7 +219,6 @@ pub fn pectra_devnet() -> BaseConfig {
         default_checkpoint: b256!(
             "f52e8522f1abc34fa91f4a0c6560cce6f9d557cfec083f1bc325a74c6060df84"
         ),
-        rpc_port: 8545,
         consensus_rpc: None,
         chain: ChainConfig {
             chain_id: 7072151312,
