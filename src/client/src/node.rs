@@ -47,7 +47,6 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> Node<S,R,DB> {
 
         Ok(Node {
             consensus,
-            execution,
             config,
             payloads,
             finalized_payloads,
@@ -58,11 +57,6 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> Node<S,R,DB> {
 
     pub async fn sync(&mut self) -> Result<(), NodeError> {
         let chain_id = self.config.chain.chain_id;
-
-        self.consensus
-            .check_rpc()
-            .await
-            .map_err(NodeError::ConsensusSyncError)?;
 
         self.consensus
             .sync()
@@ -78,13 +72,6 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> Node<S,R,DB> {
             .await
             .map_err(NodeError::ConsensusAdvanceError)?;
         self.update_payloads().await
-    }
-
-    pub fn duration_until_next_update(&self) -> Duration {
-        self.consensus
-            .duration_until_next_update()
-            .to_std()
-            .unwrap()
     }
 
     async fn update_payloads(&mut self) -> Result<(), NodeError> {
@@ -134,76 +121,6 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> Node<S,R,DB> {
         }
 
         Ok(())
-    }
-
-    // assumes tip of 1 gwei to prevent having to prove out every tx in the block
-    pub fn get_gas_price(&self) -> Result<U256> {
-        self.check_head_age()?;
-
-        let payload = self.get_payload(BlockTag::Latest)?;
-        let base_fee = U256::from_little_endian(&payload.base_fee_per_gas().to_bytes_le());
-        let tip = U256::from(10_u64.pow(9));
-        Ok(base_fee + tip)
-    }
-
-    // assumes tip of 1 gwei to prevent having to prove out every tx in the block
-    pub fn get_priority_fee(&self) -> Result<U256> {
-        let tip = U256::from(10_u64.pow(9));
-        Ok(tip)
-    }
-
-    pub fn get_block_number(&self) -> Result<u64> {
-        self.check_head_age()?;
-
-        let payload = self.get_payload(BlockTag::Latest)?;
-        Ok(*payload.block_number())
-    }
-
-
-    pub fn chain_id(&self) -> u64 {
-        self.config.chain.chain_id
-    }
-
-    pub fn syncing(&self) -> Result<SyncingStatus> {
-        if self.check_head_age().is_ok() {
-            Ok(SyncingStatus::IsFalse)
-        } else {
-            let latest_synced_block = self.get_block_number()?;
-            let oldest_payload = self.payloads.first_key_value();
-            let oldest_synced_block =
-                oldest_payload.map_or(latest_synced_block, |(key, _value)| *key);
-            let highest_block = self.consensus.expected_current_slot();
-            Ok(SyncingStatus::IsSyncing(Box::new(SyncProgress {
-                current_block: latest_synced_block.into(),
-                highest_block: highest_block.into(),
-                starting_block: oldest_synced_block.into(),
-                pulled_states: None,
-                known_states: None,
-                healed_bytecode_bytes: None,
-                healed_bytecodes: None,
-                healed_trienode_bytes: None,
-                healed_trienodes: None,
-                healing_bytecode: None,
-                healing_trienodes: None,
-                synced_account_bytes: None,
-                synced_accounts: None,
-                synced_bytecode_bytes: None,
-                synced_bytecodes: None,
-                synced_storage: None,
-                synced_storage_bytes: None,
-            })))
-        }
-    }
-
-    pub fn get_coinbase(&self) -> Result<Address> {
-        self.check_head_age()?;
-        let payload = self.get_payload(BlockTag::Latest)?;
-        let coinbase_address = Address::from_slice(payload.fee_recipient());
-        Ok(coinbase_address)
-    }
-
-    pub fn get_last_checkpoint(&self) -> Option<Vec<u8>> {
-        self.consensus.last_checkpoint.clone()
     }
 
     fn get_payload(&self, block: BlockTag) -> Result<&ExecutionPayload<S>, BlockNotFoundError> {

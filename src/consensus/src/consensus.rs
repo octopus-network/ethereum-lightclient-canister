@@ -278,16 +278,6 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
         }
     }
 
-    pub async fn check_rpc(&self) -> Result<()> {
-        let chain_id = self.rpc.chain_id().await?;
-
-        if chain_id != self.config.chain.chain_id {
-            Err(ConsensusError::IncorrectRpcNetwork.into())
-        } else {
-            Ok(())
-        }
-    }
-
     pub async fn get_execution_payload(&self, slot: &Option<u64>) -> Result<ExecutionPayload<S>> {
         let slot = slot.unwrap_or(self.store.optimistic_header.beacon().slot);
         let block = self.rpc.get_block(slot).await?;

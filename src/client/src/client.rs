@@ -227,7 +227,6 @@ impl<DB: Database> Client<DB> {
         }
 
         self.node.store(Arc::new(node));
-        self.save_last_checkpoint();
         self.start_advance_thread();
 
         Ok(())
@@ -333,16 +332,6 @@ impl<DB: Database> Client<DB> {
         Ok(())
     }
 
-    /// Saves last checkpoint of the node.
-    fn save_last_checkpoint(&self) {
-        if let Some(checkpoint) = self.node.load().get_last_checkpoint() {
-            info!("saving last checkpoint hash");
-            let res = self.db.save_checkpoint(checkpoint);
-            if res.is_err() {
-                warn!("checkpoint save failed");
-            }
-        };
-    }
 
     pub fn get_last_checkpoint(&self) -> Option<String> {
         self.node
@@ -351,40 +340,4 @@ impl<DB: Database> Client<DB> {
             .map(|checkpoint| format!("0x{}", hex::encode(checkpoint)))
     }
 
-    pub async fn shutdown(&self) {
-        self.save_last_checkpoint();
-    }
-
-
-//TODO
-/*    pub async fn get_transaction_receipt(
-        &self,
-        tx_hash: &H256,
-    ) -> Result<Option<TransactionReceipt>> {
-        self.node.load_full().get_transaction_receipt(tx_hash).await
-    }*/
-
-    pub fn get_gas_price(&self) -> Result<U256> {
-        self.node.load().get_gas_price()
-    }
-
-    pub fn get_priority_fee(&self) -> Result<U256> {
-        self.node.load().get_priority_fee()
-    }
-
-    pub fn get_block_number(&self) -> Result<u64> {
-        self.node.load().get_block_number()
-    }
-
-    pub fn chain_id(&self) -> u64 {
-        self.node.load().chain_id()
-    }
-
-    pub fn syncing(&self) -> Result<SyncingStatus> {
-        self.node.load().syncing()
-    }
-
-    pub fn get_coinbase(&self) -> Result<Address> {
-        self.node.load().get_coinbase()
-    }
 }

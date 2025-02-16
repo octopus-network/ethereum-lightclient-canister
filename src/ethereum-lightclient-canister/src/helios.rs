@@ -1,17 +1,5 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::str;
 
-use eyre::{eyre, Result, WrapErr};
-use serde_json::Value;
-
-use helios_client::{Client, ClientBuilder};
-use helios_client::database::ConfigDB;
-use helios_common::http;
-use helios_config::Network as HeliosNetwork;
-use interface::Network;
-
-thread_local! {
+/*thread_local! {
     static HELIOS: RefCell<Option<Rc<Client<ConfigDB>>>> = RefCell::new(None);
 }
 
@@ -90,3 +78,5 @@ async fn fetch_latest_checkpoint(consensus_rpc_url: &str) -> Result<String> {
         .ok_or_else(|| eyre!("No root found in response: {body}"))?;
     Ok(checkpoint.to_owned())
 }
+
+*/
