@@ -15,25 +15,28 @@ use config::Config;
 use helios_consensus_core::types::{ExecutionPayload};
 use helios_core::execution::ExecutionClient;
 use consensus::consensus::{ConsensusClient};
+use consensus::database::Database;
+use consensus::rpc::ConsensusRpc;
+use helios_consensus_core::consensus_spec::ConsensusSpec;
 use crate::errors::NodeError;
 
 #[derive(Clone)]
-pub struct Node {
-    pub consensus: ConsensusClient<NimbusRpc>,
+pub struct Node<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> {
+    pub consensus: ConsensusClient<S, R, DB>,
     pub config: Arc<Config>,
-    payloads: BTreeMap<u64, ExecutionPayload>,
-    finalized_payloads: BTreeMap<u64, ExecutionPayload>,
+    payloads: BTreeMap<u64, ExecutionPayload<S>>,
+    finalized_payloads: BTreeMap<u64, ExecutionPayload<S>>,
     current_slot: Option<u64>,
     pub history_size: usize,
 }
 
-impl Node {
+impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> Node<S,R,DB> {
     pub fn new(config: Arc<Config>) -> Result<Self, NodeError> {
         let consensus_rpc = &config.consensus_rpc;
         let checkpoint_hash = &config.checkpoint.as_ref().unwrap();
         let execution_rpc = &config.execution_rpc;
 
-        let consensus = ConsensusClient::new(consensus_rpc, checkpoint_hash, config.clone())
+        let consensus = ConsensusClient::new(consensus_rpc, config.clone())
             .map_err(NodeError::ConsensusClientCreationError)?;
         let execution = Arc::new(
             ExecutionClient::new(execution_rpc).map_err(NodeError::ExecutionClientCreationError)?,
@@ -203,7 +206,7 @@ impl Node {
         self.consensus.last_checkpoint.clone()
     }
 
-    fn get_payload(&self, block: BlockTag) -> Result<&ExecutionPayload, BlockNotFoundError> {
+    fn get_payload(&self, block: BlockTag) -> Result<&ExecutionPayload<S>, BlockNotFoundError> {
         match block {
             BlockTag::Latest => {
                 let payload = self.payloads.last_key_value();
@@ -222,12 +225,12 @@ impl Node {
         }
     }
 
-    fn get_payload_by_hash(&self, hash: &Vec<u8>) -> Result<(&u64, &ExecutionPayload)> {
+    fn get_payload_by_hash(&self, hash: &Vec<u8>) -> Result<(&u64, &ExecutionPayload<S>)> {
         let payloads = self
             .payloads
             .iter()
             .filter(|entry| &entry.1.block_hash().to_vec() == hash)
-            .collect::<Vec<(&u64, &ExecutionPayload)>>();
+            .collect::<Vec<(&u64, &ExecutionPayload<S>)>>();
 
         payloads
             .get(0)

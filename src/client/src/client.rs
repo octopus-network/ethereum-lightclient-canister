@@ -364,14 +364,6 @@ impl<DB: Database> Client<DB> {
         self.node.load_full().get_transaction_receipt(tx_hash).await
     }*/
 
-    pub async fn get_transaction_by_hash(&self, tx_hash: &H256) -> Result<Option<Transaction>> {
-        self.node.load_full().get_transaction_by_hash(tx_hash).await
-    }
-
-    pub async fn get_logs(&self, filter: &Filter) -> Result<Vec<Log>> {
-        self.node.load_full().get_logs(filter).await
-    }
-
     pub fn get_gas_price(&self) -> Result<U256> {
         self.node.load().get_gas_price()
     }
@@ -382,29 +374,6 @@ impl<DB: Database> Client<DB> {
 
     pub fn get_block_number(&self) -> Result<u64> {
         self.node.load().get_block_number()
-    }
-
-    pub async fn get_fee_history(
-        &self,
-        block_count: u64,
-        last_block: u64,
-        reward_percentiles: &[f64],
-    ) -> Result<Option<FeeHistory>> {
-        self.node
-            .load_full()
-            .get_fee_history(block_count, last_block, reward_percentiles)
-            .await
-    }
-
-    pub async fn get_transaction_by_block_hash_and_index(
-        &self,
-        block_hash: &Vec<u8>,
-        index: usize,
-    ) -> Result<Option<Transaction>> {
-        self.node
-            .load_full()
-            .get_transaction_by_block_hash_and_index(block_hash, index)
-            .await
     }
 
     pub fn chain_id(&self) -> u64 {

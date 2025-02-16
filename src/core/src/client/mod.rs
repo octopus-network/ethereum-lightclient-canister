@@ -1,9 +1,5 @@
-use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::Duration;
 
-use alloy::primitives::{Address, Bytes, B256, U256};
-use alloy::rpc::types::{Filter, FilterChanges, Log, SyncStatus};
 use eyre::Result;
 use tracing::{info, warn};
 
@@ -13,11 +9,8 @@ use crate::client::rpc::Rpc;
 use crate::consensus::Consensus;
 use crate::fork_schedule::ForkSchedule;
 use crate::network_spec::NetworkSpec;
-use crate::time::interval;
-use crate::types::BlockTag;
 
 pub mod node;
-
 
 pub struct Client<N: NetworkSpec, C: Consensus<N::BlockResponse>> {
     node: Arc<Node<N, C>>,

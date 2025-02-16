@@ -192,17 +192,8 @@ impl EthereumClientBuilder {
             execution_rpc,
             checkpoint,
             default_checkpoint,
-            #[cfg(not(target_arch = "wasm32"))]
-            rpc_bind_ip,
-            #[cfg(target_arch = "wasm32")]
             rpc_bind_ip: None,
-            #[cfg(not(target_arch = "wasm32"))]
-            rpc_port,
-            #[cfg(target_arch = "wasm32")]
             rpc_port: None,
-            #[cfg(not(target_arch = "wasm32"))]
-            data_dir,
-            #[cfg(target_arch = "wasm32")]
             data_dir: None,
             chain: base_config.chain,
             forks: base_config.forks,

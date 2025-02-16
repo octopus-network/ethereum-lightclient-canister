@@ -6,7 +6,6 @@ use alloy::rpc::types::{
     BlockId, EIP1186AccountProofResponse, FeeHistory, Filter, FilterChanges, Log,
 };
 use alloy::transports::http::Http;
-use alloy::transports::layers::{RetryBackoffLayer, RetryBackoffService};
 use async_trait::async_trait;
 use eyre::{eyre, Result};
 use reqwest::Client;

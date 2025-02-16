@@ -1,46 +1,35 @@
-use std::collections::{HashMap, HashSet};
+use std::marker::PhantomData;
 
-use alloy::consensus::BlockHeader;
-use alloy::network::primitives::HeaderResponse;
-use alloy::network::{BlockResponse, ReceiptResponse};
-use alloy::primitives::{keccak256, Address, B256, U256};
-use alloy::rlp;
-use alloy::rpc::types::{BlockTransactions, Filter, FilterChanges, Log};
+use alloy::network::ReceiptResponse;
+use alloy::primitives::B256;
+use alloy::rpc::types::{Filter, Log};
 use alloy_trie::root::ordered_trie_root_with_encoder;
 use eyre::Result;
-use futures::future::try_join_all;
-use revm::primitives::{BlobExcessGasAndPrice, KECCAK_EMPTY};
-use tracing::warn;
 
-use crate::fork_schedule::ForkSchedule;
 use crate::network_spec::NetworkSpec;
-use crate::types::BlockTag;
 
-use self::constants::MAX_SUPPORTED_LOGS_NUMBER;
 use self::errors::ExecutionError;
-use self::proof::{verify_account_proof, verify_storage_proof};
 use self::rpc::ExecutionRpc;
-use self::state::{FilterType, State};
-use self::types::Account;
 
 pub mod constants;
 pub mod errors;
-pub mod evm;
 pub mod proof;
 pub mod rpc;
 pub mod state;
 pub mod types;
 
 #[derive(Clone)]
-pub struct ExecutionClient<R: ExecutionRpc<N>> {
+pub struct ExecutionClient<N: NetworkSpec, R: ExecutionRpc<N>> {
     pub rpc: R,
+    pub _phantom_data: PhantomData<N>
 }
 
-impl<N: NetworkSpec, R: ExecutionRpc<N>> ExecutionClient< R> {
-    pub fn new(rpc: &str, state: State<N, R>, fork_schedule: ForkSchedule) -> Result<Self> {
+impl<N: NetworkSpec, R: ExecutionRpc<N>> ExecutionClient<N,R> {
+    pub fn new(rpc: &str) -> Result<Self> {
         let rpc: R = ExecutionRpc::new(rpc)?;
-        Ok(ExecutionClient::<R> {
+        Ok(ExecutionClient::<N, R> {
             rpc,
+            _phantom_data: Default::default(),
         })
     }
 

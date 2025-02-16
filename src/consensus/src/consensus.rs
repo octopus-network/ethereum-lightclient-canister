@@ -38,7 +38,7 @@ use crate::constants::MAX_REQUEST_LIGHT_CLIENT_UPDATES;
 use crate::database::Database;
 use crate::rpc::ConsensusRpc;
 
-pub struct ConsensusClient<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> {
+pub struct  ConsensusClient<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database>  {
     pub block_recv: Option<Receiver<Block<Transaction>>>,
     pub finalized_block_recv: Option<watch::Receiver<Option<Block<Transaction>>>>,
     pub checkpoint_recv: watch::Receiver<Option<B256>>,
