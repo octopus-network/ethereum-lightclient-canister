@@ -16,6 +16,7 @@ eyre = { workspace = true }
 alloy.workspace = true
 helios_common = { workspace = true }
 helios_config = { workspace = true }
+helios-core = {path = "../core"}
 helios-consensus-core = {path = "../consensus/consensus-core"}
 helios-consensus = {package = "consensus", path = "../consensus"}
 interface = { workspace = true }
@@ -36,6 +37,37 @@ serde_json = "1.0.104"
 anyhow = "1.0.72"
 async-trait = "0.1.86"
 
-[dev-dependencies]
-temp-dir = "0.1.11"
-candid = { version = "0.9.2", features = ["parser"] }
+
+# consensus
+alloy-trie.workspace = true
+tree_hash.workspace = true
+revm.workspace = true
+
+# config
+figment = { version = "0.10.7", features = ["toml", "env"] }
+serde_yaml = "0.9.14"
+strum = { version = "0.26.2", features = ["derive"] }
+url = {version = "2.5.0", features = ["serde"] }
+
+# async/futures
+tokio.workspace = true
+futures.workspace = true
+
+# io
+reqwest.workspace = true
+
+hex.workspace = true
+tracing.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+superstruct.workspace = true
+retri.workspace = true
+typenum.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4.37"
+getrandom = { version = "0.2.1", features = ["js"] }
+
+
+[target.wasm32-unknown-unknown.dependencies]
+parking_lot = { version = "0.12.2" }

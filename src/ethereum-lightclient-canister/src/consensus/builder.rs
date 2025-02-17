@@ -10,13 +10,13 @@ use eyre::{eyre, Result};
 use helios_consensus_core::consensus_spec::MainnetConsensusSpec;
 use helios_core::client::Client;
 
-use crate::config::networks::Network;
-use crate::config::Config;
+use helios_consensus::config::networks::Network;
+use helios_consensus::config::Config;
 use crate::consensus::ConsensusClient;
-use crate::database::Database;
-use crate::rpc::http_rpc::HttpRpc;
-use crate::spec::Ethereum;
-use crate::EthereumClient;
+use crate::consensus::database::Database;
+use helios_consensus::rpc::http_rpc::HttpRpc;
+use crate::consensus::spec::Ethereum;
+use crate::consensus::EthereumClient;
 
 #[derive(Default)]
 pub struct EthereumClientBuilder {

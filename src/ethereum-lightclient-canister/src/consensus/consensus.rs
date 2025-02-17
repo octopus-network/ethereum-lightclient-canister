@@ -31,12 +31,12 @@ use helios_consensus_core::{
 use helios_core::consensus::Consensus;
 use helios_core::time::{interval_at, Instant, SystemTime, UNIX_EPOCH};
 
-use crate::config::checkpoints::CheckpointFallback;
-use crate::config::networks::Network;
-use crate::config::Config;
-use crate::constants::MAX_REQUEST_LIGHT_CLIENT_UPDATES;
-use crate::database::Database;
-use crate::rpc::ConsensusRpc;
+use helios_consensus::config::checkpoints::CheckpointFallback;
+use helios_consensus::config::networks::Network;
+use helios_consensus::config::Config;
+use helios_consensus::constants::MAX_REQUEST_LIGHT_CLIENT_UPDATES;
+use crate::consensus::database::Database;
+use helios_consensus::rpc::ConsensusRpc;
 
 pub struct  ConsensusClient<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database>  {
     pub block_recv: Option<Receiver<Block<Transaction>>>,

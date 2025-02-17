@@ -18,8 +18,8 @@ mod utils;
 mod state;
 mod storable_structures;
 mod ic_consensus_rpc;
-mod consensus_types;
 mod ic_consensus_rpc_types;
+mod consensus;
 
 
 #[init]

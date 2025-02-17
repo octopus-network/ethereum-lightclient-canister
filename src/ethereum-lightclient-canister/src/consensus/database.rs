@@ -8,7 +8,7 @@ use std::{
 use alloy::primitives::B256;
 use eyre::Result;
 
-use crate::config::Config;
+use helios_consensus::config::Config;
 
 pub trait Database: Clone + Sync + Send + 'static {
     fn new(config: &Config) -> Result<Self>

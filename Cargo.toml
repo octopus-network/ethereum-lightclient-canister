@@ -5,6 +5,8 @@ members = [
   "src/interface",
   "src/config",
   "src/ethereum-lightclient-canister",
+ # "src/execution",
+ # "src/client",
   "src/common",
   "src/contracts-abi",
   "src/consensus/consensus-core"]
@@ -55,7 +57,6 @@ revm = { version = "19.4.0", default-features = false, features = [
   "optional_no_base_fee",
 ] }
 
-# async/futures
 async-trait = "0.1.57"
 futures = "0.3.23"
 tokio = { version = "1", features = ["rt", "sync", "macros"] }
