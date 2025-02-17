@@ -53,9 +53,9 @@ pub struct Inner<S: ConsensusSpec, R: ConsensusRpc<S>> {
     pub rpc: R,
     pub store: LightClientStore<S>,
     last_checkpoint: Option<B256>,
-    block_send: Sender<Block<Transaction>>,
+ /*   block_send: Sender<Block<Transaction>>,
     finalized_block_send: watch::Sender<Option<Block<Transaction>>>,
-    checkpoint_send: watch::Sender<Option<B256>>,
+    checkpoint_send: watch::Sender<Option<B256>>,*/
     pub config: Arc<Config>,
     phantom: PhantomData<S>,
 }
