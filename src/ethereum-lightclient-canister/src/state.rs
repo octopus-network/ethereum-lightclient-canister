@@ -246,4 +246,7 @@ impl StateModifier {
         Self::push_block(block).await;
     }
 
+    pub fn update_last_checkpoint(new_checkpoint: String) {
+        mutate_state(|s|s.last_checkpoint = Some(new_checkpoint));
+    }
 }

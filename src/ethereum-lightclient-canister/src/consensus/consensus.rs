@@ -416,7 +416,7 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
             Err(_) => {}
         }
         if self.last_checkpoint.is_some() {
-            mutate_state(|s| s.last_checkpoint = Some(hex::encode(self.last_checkpoint.clone().unwrap())));
+            StateModifier::update_last_checkpoint(hex::encode(self.last_checkpoint.clone().unwrap())));
         }
     }
 

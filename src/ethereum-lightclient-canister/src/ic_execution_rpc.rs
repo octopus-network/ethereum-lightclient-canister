@@ -4,6 +4,9 @@ use alloy::eips::eip2930::AccessList;
 use alloy::primitives::{Address, B256, U256};
 use alloy::rpc::types::{EIP1186AccountProofResponse, FeeHistory, Filter, FilterChanges, Log};
 use async_trait::async_trait;
+use ic_cdk::api::management_canister::http_request::HttpMethod::GET;
+use helios_common::errors::RpcError;
+use helios_common::http::{get, post};
 use helios_core::execution::rpc::ExecutionRpc;
 use helios_core::network_spec::NetworkSpec;
 use helios_core::types::BlockTag;
@@ -94,4 +97,19 @@ impl<N: NetworkSpec> ExecutionRpc<N> for IcExecutionRpc<N> {
     async fn get_fee_history(&self, block_count: u64, last_block: u64, reward_percentiles: &[f64]) -> eyre::Result<FeeHistory> {
         todo!()
     }
+}
+
+async fn post_request<T>(name: impl AsRef<str>, body: String, url: impl AsRef<str>) -> eyre::Result<T>
+    where
+        T: serde::de::DeserializeOwned,
+{
+    let name = name.as_ref();
+    let url = url.as_ref();
+    let resp =post(url, &[], body.as_bytes().to_vec()).await.map_err(|e| RpcError::new(name, e))?;
+    if resp.status != 200 {
+        let e = format!("http response with status {}", resp.status);
+        Err(RpcError::new(name, e))?;
+    }
+    let value = serde_json::from_slice(&resp.body).map_err(|e| RpcError::new(name, e))?;
+    Ok(value)
 }
