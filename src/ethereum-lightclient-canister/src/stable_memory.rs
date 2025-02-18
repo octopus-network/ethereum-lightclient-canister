@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-use crate::storable_structures::HeaderInfo;
+use crate::storable_structures::BlockInfo;
 
 
 pub type InnerMemory = DefaultMemoryImpl;
@@ -44,10 +44,10 @@ pub fn get_upgrade_stash_memory() -> Memory {
     with_memory_manager(|m| m.get(UPGRADE_STASH_MEMORY_ID))
 }
 
-pub fn init_block_height_to_header_map() -> StableBTreeMap<u64, HeaderInfo, Memory> {
+pub fn init_block_height_to_header_map() -> StableBTreeMap<u64, BlockInfo, Memory> {
     StableBTreeMap::init( with_memory_manager(|m| m.get(BLOCK_HEIGHT_TO_HEADER_MEMORY_ID)))
 }
 
-pub fn init_block_hash_to_header_map() -> StableBTreeMap<String, HeaderInfo, Memory> {
+pub fn init_block_hash_to_header_map() -> StableBTreeMap<String, BlockInfo, Memory> {
     StableBTreeMap::init( with_memory_manager(|m| m.get(BLOCK_HASH_TO_HEADER_MEMORY_ID)))
 }

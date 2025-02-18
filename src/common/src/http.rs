@@ -1,4 +1,3 @@
-use eyre::Result;
 
 pub struct HttpResponse {
     pub status: u16,
@@ -8,7 +7,6 @@ pub struct HttpResponse {
 
 #[cfg(target_arch = "wasm32")]
 pub use icp::{get, post};
-use crate::errors::RpcError;
 
 #[cfg(target_arch = "wasm32")]
 mod icp {

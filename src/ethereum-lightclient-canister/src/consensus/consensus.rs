@@ -5,6 +5,7 @@ use std::sync::Arc;
 use alloy::consensus::proofs::{calculate_transaction_root, calculate_withdrawals_root};
 use alloy::consensus::{Header as ConsensusHeader, Transaction as TxTrait, TxEnvelope};
 use alloy::eips::eip4895::{Withdrawal, Withdrawals};
+use alloy::hex;
 use alloy::primitives::{b256, fixed_bytes, Bloom, BloomInput, B256, U256};
 use alloy::rlp::Decodable;
 use alloy::rpc::types::{Block, BlockTransactions, Header, Transaction};
@@ -37,6 +38,8 @@ use helios_consensus::config::Config;
 use helios_consensus::constants::MAX_REQUEST_LIGHT_CLIENT_UPDATES;
 use crate::consensus::database::Database;
 use helios_consensus::rpc::ConsensusRpc;
+use crate::state::{mutate_state, StateModifier};
+use crate::storable_structures::BlockInfo;
 
 pub struct  ConsensusClient<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database>  {
     pub block_recv: Option<Receiver<Block<Transaction>>>,
@@ -53,9 +56,9 @@ pub struct Inner<S: ConsensusSpec, R: ConsensusRpc<S>> {
     pub rpc: R,
     pub store: LightClientStore<S>,
     last_checkpoint: Option<B256>,
- /*   block_send: Sender<Block<Transaction>>,
+    block_send: Sender<Block<Transaction>>,
     finalized_block_send: watch::Sender<Option<Block<Transaction>>>,
-    checkpoint_send: watch::Sender<Option<B256>>,*/
+    checkpoint_send: watch::Sender<Option<B256>>,
     pub config: Arc<Config>,
     phantom: PhantomData<S>,
 }
@@ -99,9 +102,6 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> ConsensusClient<S, R, D
         let initial_checkpoint = config
             .checkpoint
             .unwrap_or_else(|| db.load_checkpoint().unwrap_or(config.default_checkpoint));
-
-        #[cfg(not(target_arch = "wasm32"))]
-        let run = tokio::spawn;
 
         #[cfg(target_arch = "wasm32")]
         let run = wasm_bindgen_futures::spawn_local;
@@ -156,12 +156,7 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> ConsensusClient<S, R, D
                             warn!(target: "helios::consensus", "advance error: {}", err);
                             continue;
                         }
-
-                        let res = inner.send_blocks().await;
-                        if let Err(err) = res {
-                            warn!(target: "helios::consensus", "send error: {}", err);
-                            continue;
-                        }
+                        let _ = inner.store().await;
                     }
                 }
             }
@@ -393,6 +388,36 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
         }
 
         Ok(())
+    }
+
+    pub async fn store(&self) {
+        match self.store.optimistic_header.execution() {
+            Ok(e) => {
+                let header_info = BlockInfo {
+                    receipt_root: hex::encode(e.receipts_root().clone().to_vec()),
+                    parent_block_hash: hex::encode(e.parent_hash().clone().to_vec()),
+                    block_number: e.block_number().clone(),
+                    block_hash: hex::encode(e.block_hash().clone().to_vec()),
+                };
+                StateModifier::push_block(header_info).await;
+            }
+            Err(_) => {}
+        }
+        match self.store.finalized_header.execution() {
+            Ok(e) => {
+                let header_info = BlockInfo {
+                    receipt_root: hex::encode(e.receipts_root().clone().to_vec()),
+                    parent_block_hash: hex::encode(e.parent_hash().clone().to_vec()),
+                    block_number: e.block_number().clone(),
+                    block_hash: hex::encode(e.block_hash().clone().to_vec()),
+                };
+                StateModifier::push_finalized_block(header_info).await;
+            }
+            Err(_) => {}
+        }
+        if self.last_checkpoint.is_some() {
+            mutate_state(|s| s.last_checkpoint = Some(hex::encode(self.last_checkpoint.clone().unwrap())));
+        }
     }
 
     pub async fn send_blocks(&self) -> Result<()> {

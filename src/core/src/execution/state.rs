@@ -111,25 +111,6 @@ impl<N: NetworkSpec, R: ExecutionRpc<N>> State<N, R> {
         blocks
     }
 
-    // transaction fetch
-
-    pub async fn get_transaction(&self, hash: B256) -> Option<N::TransactionResponse> {
-        let inner = self.inner.read().await;
-        inner
-            .txs
-            .get(&hash)
-            .and_then(|loc| {
-                inner
-                    .blocks
-                    .get(&loc.block)
-                    .and_then(|block| match &block.transactions() {
-                        BlockTransactions::Full(txs) => txs.get(loc.index),
-                        BlockTransactions::Hashes(_) => unreachable!(),
-                        BlockTransactions::Uncle => unreachable!(),
-                    })
-            })
-            .cloned()
-    }
 
     pub async fn get_transaction_by_block_hash_and_index(
         &self,
@@ -188,22 +169,6 @@ impl<N: NetworkSpec, R: ExecutionRpc<N>> State<N, R> {
             .map(|block| block.header().beneficiary())
     }
 
-    // filter
-
-    pub async fn push_filter(&self, id: U256, filter: FilterType) {
-        self.inner.write().await.filters.insert(id, filter);
-    }
-
-    pub async fn remove_filter(&self, id: &U256) -> bool {
-        self.inner.write().await.filters.remove(id).is_some()
-    }
-
-    pub async fn get_filter(&self, id: &U256) -> Option<FilterType> {
-        self.inner.read().await.filters.get(id).cloned()
-    }
-
-    // misc
-
     pub async fn latest_block_number(&self) -> Option<u64> {
         let inner = self.inner.read().await;
         inner.blocks.last_key_value().map(|entry| *entry.0)
@@ -219,8 +184,6 @@ struct Inner<N: NetworkSpec, R: ExecutionRpc<N>> {
     blocks: BTreeMap<u64, N::BlockResponse>,
     finalized_block: Option<N::BlockResponse>,
     hashes: HashMap<B256, u64>,
-    txs: HashMap<B256, TransactionLocation>,
-    filters: HashMap<U256, FilterType>,
     history_length: u64,
     rpc: R,
 }
@@ -232,8 +195,6 @@ impl<N: NetworkSpec, R: ExecutionRpc<N>> Inner<N, R> {
             blocks: BTreeMap::default(),
             finalized_block: None,
             hashes: HashMap::default(),
-            txs: HashMap::default(),
-            filters: HashMap::default(),
             rpc,
         }
     }
@@ -278,17 +239,6 @@ impl<N: NetworkSpec, R: ExecutionRpc<N>> Inner<N, R> {
 
         self.hashes
             .insert(block.header().hash(), block.header().number());
-        block
-            .transactions()
-            .hashes()
-            .enumerate()
-            .for_each(|(i, tx)| {
-                let location = TransactionLocation {
-                    block: block.header().number(),
-                    index: i,
-                };
-                self.txs.insert(tx, location);
-            });
 
         self.blocks.insert(block.header().number(), block);
         true
@@ -359,9 +309,6 @@ impl<N: NetworkSpec, R: ExecutionRpc<N>> Inner<N, R> {
     fn remove_block(&mut self, number: u64) {
         if let Some(block) = self.blocks.remove(&number) {
             self.hashes.remove(&block.header().hash());
-            block.transactions().hashes().for_each(|tx| {
-                self.txs.remove(&tx);
-            });
         }
     }
 }

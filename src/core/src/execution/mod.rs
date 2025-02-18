@@ -1,6 +1,5 @@
 use std::marker::PhantomData;
 
-use alloy::network::ReceiptResponse;
 use alloy::primitives::B256;
 use alloy::rpc::types::{Filter, Log};
 use alloy_trie::root::ordered_trie_root_with_encoder;

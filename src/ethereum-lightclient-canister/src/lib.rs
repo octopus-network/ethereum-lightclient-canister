@@ -1,11 +1,8 @@
-use std::cell::RefCell;
-
 use candid::Nat;
 use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
 use ic_cdk_timers::set_timer;
-use interface::{
-    Address, Erc20BalanceOfRequest, Erc721OwnerOfRequest, Network,
-    SetupRequest, U256,
+use interface::{Network,
+    SetupRequest
 };
 use log::{debug, error};
 
@@ -18,8 +15,8 @@ mod utils;
 mod state;
 mod storable_structures;
 mod ic_consensus_rpc;
-mod ic_consensus_rpc_types;
 mod consensus;
+mod ic_execution_rpc;
 
 
 #[init]
@@ -65,7 +62,6 @@ fn post_upgrade() {
                 &consensus_rpc_url,
                 &checkpoint,
             );
-
         });
     });
 }
