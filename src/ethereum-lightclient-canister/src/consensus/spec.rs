@@ -7,12 +7,16 @@ use alloy::{
     primitives::{Address, Bytes, ChainId, TxKind, U256},
     rpc::types::{AccessList, Log, TransactionRequest},
 };
-use revm::primitives::{BlobExcessGasAndPrice, BlockEnv, TxEnv};
+use alloy::network::BlockResponse;
 
-use helios_core::{fork_schedule::ForkSchedule, network_spec::NetworkSpec};
 
+/*use revm::primitives::{BlobExcessGasAndPrice, BlockEnv, TxEnv};
+
+use helios_core::{fork_schedule::ForkSchedule, network_spec::NetworkSpec};*/
+/*
 #[derive(Clone, Copy, Debug)]
 pub struct Ethereum;
+
 
 impl NetworkSpec for Ethereum {
     fn encode_receipt(receipt: &Self::ReceiptResponse) -> Vec<u8> {
@@ -114,11 +118,11 @@ impl NetworkSpec for Ethereum {
 
     fn block_env(block: &Self::BlockResponse, fork_schedule: &ForkSchedule) -> BlockEnv {
         let mut block_env = BlockEnv::default();
-        block_env.number = U256::from(block.header.number());
+        block_env.number = U256::from(block.header().number());
         block_env.coinbase = block.header.beneficiary();
-        block_env.timestamp = U256::from(block.header.timestamp());
-        block_env.gas_limit = U256::from(block.header.gas_limit());
-        block_env.basefee = U256::from(block.header.base_fee_per_gas().unwrap_or(0_u64));
+        block_env.timestamp = U256::from(block.header().timestamp());
+        block_env.gas_limit = U256::from(block.header().gas_limit());
+        block_env.basefee = U256::from(block.header().base_fee_per_gas().unwrap_or(0_u64));
         block_env.difficulty = block.header.difficulty();
         block_env.prevrandao = block.header.mix_hash();
 
@@ -305,3 +309,4 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         Ok(wallet.sign_request(self).await?)
     }
 }
+*/

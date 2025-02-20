@@ -1,4 +1,4 @@
-use alloy::eips::BlockNumberOrTag;
+/*use alloy::eips::BlockNumberOrTag;
 use alloy::primitives::{Address, B256, U256};
 use alloy::providers::{Provider, ProviderBuilder, RootProvider};
 use alloy::rpc::client::ClientBuilder;
@@ -228,3 +228,4 @@ impl<N: NetworkSpec> ExecutionRpc<N> for HttpRpc<N> {
             .ok_or(eyre!("block not found"))
     }
 }
+*/

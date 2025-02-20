@@ -41,7 +41,6 @@ helios-consensus-core = { path = "consensus-core" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4.37"
-getrandom = { version = "0.2.1", features = ["js"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 openssl.workspace = true

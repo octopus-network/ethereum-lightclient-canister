@@ -1,4 +1,4 @@
-use std::sync::Arc;
+/*use std::sync::Arc;
 
 use eyre::Result;
 use tracing::{info, warn};
@@ -60,3 +60,4 @@ impl<N: NetworkSpec, C: Consensus<N::BlockResponse>> Client<N, C> {
     }
 
 }
+*/

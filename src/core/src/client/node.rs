@@ -1,4 +1,4 @@
-use std::sync::Arc;
+/*use std::sync::Arc;
 
 use alloy::primitives::U256;
 use eyre::Result;
@@ -48,3 +48,4 @@ impl<N: NetworkSpec, C: Consensus<N::BlockResponse>> Node<N, C> {
     }
 
 }
+*/
