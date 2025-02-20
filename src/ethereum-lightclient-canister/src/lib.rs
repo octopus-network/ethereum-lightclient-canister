@@ -16,7 +16,6 @@ use crate::state::{mutate_state, read_state};
 mod helios;
 mod random;
 mod stable_memory;
-mod utils;
 mod state;
 mod storable_structures;
 mod ic_consensus_rpc;

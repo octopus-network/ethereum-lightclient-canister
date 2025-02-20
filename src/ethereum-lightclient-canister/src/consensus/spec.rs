@@ -1,4 +1,4 @@
-/*use alloy::{
+use alloy::{
     consensus::{
         proofs::{calculate_transaction_root, calculate_withdrawals_root},
         BlockHeader, Receipt, ReceiptWithBloom, TxReceipt, TxType, TypedTransaction,
@@ -305,4 +305,3 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         Ok(wallet.sign_request(self).await?)
     }
 }
-*/

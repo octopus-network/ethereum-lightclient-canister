@@ -1,7 +1,4 @@
-/*#[cfg(not(target_arch = "wasm32"))]
-use std::net::{IpAddr, SocketAddr};
-#[cfg(not(target_arch = "wasm32"))]
-use std::path::PathBuf;
+
 use std::sync::Arc;
 
 use alloy::primitives::B256;
@@ -24,12 +21,6 @@ pub struct EthereumClientBuilder {
     consensus_rpc: Option<String>,
     execution_rpc: Option<String>,
     checkpoint: Option<B256>,
-    #[cfg(not(target_arch = "wasm32"))]
-    rpc_bind_ip: Option<IpAddr>,
-    #[cfg(not(target_arch = "wasm32"))]
-    rpc_port: Option<u16>,
-    #[cfg(not(target_arch = "wasm32"))]
-    data_dir: Option<PathBuf>,
     config: Option<Config>,
     fallback: Option<String>,
     load_external_fallback: bool,
@@ -221,4 +212,3 @@ impl EthereumClientBuilder {
         )
     }
 }
-*/

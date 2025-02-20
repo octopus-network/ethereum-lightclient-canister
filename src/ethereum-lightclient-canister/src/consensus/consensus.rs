@@ -1,4 +1,4 @@
-/*use std::marker::PhantomData;
+use std::marker::PhantomData;
 use std::process;
 use std::sync::Arc;
 
@@ -665,4 +665,3 @@ fn payload_to_block<S: ConsensusSpec>(value: ExecutionPayload<S>) -> Block<Trans
     Block::new(header, BlockTransactions::Full(txs))
         .with_withdrawals(Some(Withdrawals::new(withdrawals)))
 }
-*/
