@@ -19,7 +19,7 @@ mod stable_memory;
 mod state;
 mod storable_structures;
 mod ic_consensus_rpc;
-//mod consensus;
+mod consensus;
 mod ic_execution_rpc;
 
 

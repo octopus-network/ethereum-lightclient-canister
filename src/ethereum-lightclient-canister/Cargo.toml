@@ -9,9 +9,9 @@ license = "Apache-2.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-#eyre = { workspace = true }
+eyre = { workspace = true }
 #alloy.workspace = true
-#helios_common = { workspace = true }
+helios_common = { workspace = true }
 helios_config = { workspace = true }
 helios-core = {path = "../core"}
 helios-consensus-core = {path = "../consensus/consensus-core"}
