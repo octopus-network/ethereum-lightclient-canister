@@ -7,16 +7,16 @@ use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
 use crate::stable_memory;
 use std::collections::BTreeMap;
-use alloy::consensus::BlockHeader;
-use alloy::hex;
-use alloy::network::BlockResponse;
-use alloy::network::primitives::HeaderResponse;
-use alloy::primitives::B256;
-use eyre::eyre;
-use helios_common::http::get;
-use helios_core::execution::rpc::ExecutionRpc;
-use crate::consensus::spec::Ethereum;
-use crate::ic_execution_rpc::IcExecutionRpc;
+// use alloy::consensus::BlockHeader;
+// use alloy::hex;
+// use alloy::network::BlockResponse;
+// use alloy::network::primitives::HeaderResponse;
+// use alloy::primitives::B256;
+// use eyre::eyre;
+//use helios_common::http::get;
+//use helios_core::execution::rpc::ExecutionRpc;
+//use crate::consensus::spec::Ethereum;
+//use crate::ic_execution_rpc::IcExecutionRpc;
 
 use crate::stable_memory::{init_block_hash_to_header_map, init_block_height_to_header_map, Memory};
 use crate::storable_structures::BlockInfo;
@@ -114,7 +114,7 @@ pub struct InitArgs {
 
 }
 
-
+/*
 
 pub struct StateModifier;
 
@@ -249,4 +249,4 @@ impl StateModifier {
     pub fn update_last_checkpoint(new_checkpoint: String) {
         mutate_state(|s|s.last_checkpoint = Some(new_checkpoint));
     }
-}
+}*/

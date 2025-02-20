@@ -1,4 +1,4 @@
-use std::any::Any;
+/*use std::any::Any;
 use std::marker::PhantomData;
 use alloy::eips::BlockId;
 use alloy::eips::eip2930::AccessList;
@@ -6,14 +6,12 @@ use alloy::hex;
 use alloy::primitives::{Address, B256, U256};
 use alloy::rpc::types::{EIP1186AccountProofResponse, FeeHistory, Filter, FilterChanges, Log};
 use async_trait::async_trait;
-use ic_cdk::api::management_canister::http_request::HttpMethod::GET;
 use serde::{Deserialize, Serialize};
 use helios_common::errors::RpcError;
 use helios_common::http::{get, post};
 use helios_core::execution::rpc::ExecutionRpc;
 use helios_core::network_spec::NetworkSpec;
 use helios_core::types::BlockTag;
-use crate::consensus::spec::Ethereum;
 
 #[derive(Debug,Clone)]
 pub struct IcExecutionRpc<N> {
@@ -21,7 +19,6 @@ pub struct IcExecutionRpc<N> {
     phantom_data: PhantomData<N>,
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<N: NetworkSpec> ExecutionRpc<N> for IcExecutionRpc<N> {
     fn new(rpcx: &str) -> eyre::Result<Self> where Self: Sized {
@@ -139,4 +136,4 @@ pub struct EvmRpcResponse<T> {
     pub id: u32,
     pub jsonrpc: String,
     pub result: Option<T>,
-}
+}*/

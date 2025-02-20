@@ -1,4 +1,4 @@
-use std::cmp;
+/*use std::cmp;
 use alloy::hex::hex;
 use alloy::primitives::B256;
 use async_trait::async_trait;
@@ -92,3 +92,4 @@ async fn rpc_request<T>(name: impl AsRef<str>, url: impl AsRef<str>) -> eyre::Re
     let value = serde_json::from_slice(&resp.body).map_err(|e| RpcError::new(name, e))?;
     Ok(value)
 }
+*/

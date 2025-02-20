@@ -1,4 +1,4 @@
-use getrandom::{register_custom_getrandom, Error};
+/*use getrandom::{register_custom_getrandom, Error};
 use ic_cdk::api::management_canister::main::raw_rand;
 use rand_chacha::ChaCha20Rng;
 use rand_core::{RngCore, SeedableRng};
@@ -49,3 +49,4 @@ fn ic_getrandom(dest: &mut [u8]) -> Result<(), Error> {
     });
     Ok(())
 }
+*/

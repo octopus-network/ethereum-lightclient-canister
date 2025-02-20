@@ -1,4 +1,4 @@
-#[cfg(not(target_arch = "wasm32"))]
+/*#[cfg(not(target_arch = "wasm32"))]
 use std::net::{IpAddr, SocketAddr};
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::PathBuf;
@@ -221,3 +221,4 @@ impl EthereumClientBuilder {
         )
     }
 }
+*/

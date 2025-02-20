@@ -1,4 +1,4 @@
-use candid::Nat;
+/*use candid::Nat;
 use ethers_core::types::U256;
 use num_bigint::BigUint;
 
@@ -13,3 +13,4 @@ impl ToNat for U256 {
         Nat(BigUint::from_bytes_le(&bytes))
     }
 }
+*/
