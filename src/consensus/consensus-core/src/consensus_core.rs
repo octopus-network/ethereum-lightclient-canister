@@ -1,6 +1,4 @@
 use std::cmp;
-#[cfg(not(target_arch = "wasm32"))]
-use std::time::{SystemTime, UNIX_EPOCH};
 
 use alloy::primitives::B256;
 use eyre::Result;

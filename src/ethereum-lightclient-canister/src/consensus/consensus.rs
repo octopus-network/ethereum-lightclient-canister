@@ -1,8 +1,8 @@
 
-
 use std::marker::PhantomData;
 use std::process;
 use std::sync::Arc;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 
 use eyre::eyre;
@@ -15,199 +15,107 @@ use tokio::sync::mpsc::channel;
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::watch;
+use crate::consensus::calc_sync_period;
+use crate::consensus::config::Config;
+use crate::consensus::consensus_spec::MainnetConsensusSpec;
+use crate::ic_consensus_rpc::IcpConsensusRpc;
+use crate::rpc_types::convert::hex_to_u64;
+use crate::rpc_types::finality_update::FinalityUpdate;
 use crate::rpc_types::lightclient_store::LightClientStore;
+use crate::rpc_types::update::Update;
+use crate::state::read_state;
 
 #[derive(Debug)]
 pub struct Inner {
+    pub rpc: IcpConsensusRpc,
     pub store: LightClientStore,
     last_checkpoint: Option<String>,
     pub config: Config,
 }
 
-impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> Consensus<Block>
-for ConsensusClient<S, R, DB>
-{
-    fn block_recv(&mut self) -> Option<Receiver<Block<Transaction>>> {
-        self.block_recv.take()
-    }
 
-    fn finalized_block_recv(&mut self) -> Option<watch::Receiver<Option<Block<Transaction>>>> {
-        self.finalized_block_recv.take()
-    }
 
-    fn expected_highest_block(&self) -> u64 {
-        u64::MAX
-    }
+pub fn start_advance_thread(rpc: &str, config: Config) {
+    let config_clone = config.clone();
+    let rpc = rpc.to_string();
+    let genesis_time = config.chain.genesis_time;
 
-    fn chain_id(&self) -> u64 {
-        self.config.chain.chain_id
-    }
+    let initial_checkpoint = if let Some(c) = read_state(|s|s.last_checkpoint.clone()) {
+        c
+    } else { config.default_checkpoint };
 
-    fn shutdown(&self) -> Result<()> {
-        self.shutdown_send.send(true)?;
-        Ok(())
-    }
-}
+    let run = wasm_bindgen_futures::spawn_local;
+    run(async move {
+        let mut inner = Inner::new(
+            &rpc,
+            config.clone(),
+        );
 
-impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> ConsensusClient<S, R, DB> {
-    pub fn new(rpc: &str, config: Arc<Config>) -> Result<ConsensusClient<S, R, DB>> {
-        let (block_send, block_recv) = channel(256);
-        let (finalized_block_send, finalized_block_recv) = watch::channel(None);
-        let (checkpoint_send, checkpoint_recv) = watch::channel(None);
-        let (shutdown_send, shutdown_recv) = watch::channel(false);
-
-        let config_clone = config.clone();
-        let rpc = rpc.to_string();
-        let genesis_time = config.chain.genesis_time;
-        let db = Arc::new(DB::new(&config)?);
-        let initial_checkpoint = config
-            .checkpoint
-            .unwrap_or_else(|| db.load_checkpoint().unwrap_or(config.default_checkpoint));
-
-        #[cfg(not(target_arch = "wasm32"))]
-            let run = tokio::spawn;
-
-        #[cfg(target_arch = "wasm32")]
-            let run = wasm_bindgen_futures::spawn_local;
-
-        let mut shutdown_rx = shutdown_recv.clone();
-
-        run(async move {
-            let mut inner = Inner::<S, R>::new(
-                &rpc,
-                block_send,
-                finalized_block_send,
-                checkpoint_send,
-                config.clone(),
-            );
-
-            let res = inner.sync(initial_checkpoint).await;
-            if let Err(err) = res {
-                if config.load_external_fallback {
-                    let res = sync_all_fallbacks(&mut inner, config.chain.chain_id).await;
-                    if let Err(err) = res {
-                        error!(target: "helios::consensus", err = %err, "sync failed");
-                        process::exit(1);
-                    }
-                } else if let Some(fallback) = &config.fallback {
-                    let res = sync_fallback(&mut inner, fallback).await;
-                    if let Err(err) = res {
-                        error!(target: "helios::consensus", err = %err, "sync failed");
-                        process::exit(1);
-                    }
-                } else {
+        let res = inner.sync(initial_checkpoint).await;
+        if let Err(err) = res {
+            if config.load_external_fallback {
+                let res = sync_all_fallbacks(&mut inner, config.chain.chain_id).await;
+                if let Err(err) = res {
                     error!(target: "helios::consensus", err = %err, "sync failed");
                     process::exit(1);
                 }
+            } else if let Some(fallback) = &config.fallback {
+                let res = sync_fallback(&mut inner, fallback).await;
+                if let Err(err) = res {
+                    error!(target: "helios::consensus", err = %err, "sync failed");
+                    process::exit(1);
+                }
+            } else {
+                error!(target: "helios::consensus", err = %err, "sync failed");
+                process::exit(1);
             }
+        }
 
-            _ = inner.send_blocks().await;
+        //TODO
+        //_ = inner.send_blocks().await;
 
-            let start = Instant::now() + inner.duration_until_next_update().to_std().unwrap();
-            let mut interval = interval_at(start, std::time::Duration::from_secs(12));
+        let start = Instant::now() + inner.duration_until_next_update().to_std().unwrap();
+        let mut interval = interval_at(start, std::time::Duration::from_secs(12));
 
-            loop {
-                tokio::select! {
-                    _ = shutdown_rx.changed() => {
-                        if *shutdown_rx.borrow() {
-                            info!(target: "helios::consensus", "shutting down consensus client");
-                            break;
-                        }
-                    }
+        loop {
+            tokio::select! {
                     _ = interval.tick() => {
                         let res = inner.advance().await;
                         if let Err(err) = res {
                             warn!(target: "helios::consensus", "advance error: {}", err);
                             continue;
                         }
-
-                        let res = inner.send_blocks().await;
+                        //TODO
+                        //let res = inner.send_blocks().await;
                         if let Err(err) = res {
                             warn!(target: "helios::consensus", "send error: {}", err);
                             continue;
                         }
                     }
                 }
-            }
-        });
-
-        save_new_checkpoints(
-            checkpoint_recv.clone(),
-            db.clone(),
-            initial_checkpoint,
-            shutdown_recv,
-        );
-
-        Ok(ConsensusClient {
-            block_recv: Some(block_recv),
-            finalized_block_recv: Some(finalized_block_recv),
-            checkpoint_recv,
-            shutdown_send,
-            genesis_time,
-            config: config_clone,
-            phantom: PhantomData,
-        })
-    }
-
-    pub fn expected_current_slot(&self) -> u64 {
-        let now = SystemTime::now();
-
-        expected_current_slot(now, self.genesis_time)
-    }
-}
-
-fn save_new_checkpoints<DB: Database>(
-    mut checkpoint_recv: watch::Receiver<Option<B256>>,
-    db: Arc<DB>,
-    initial_checkpoint: B256,
-    mut shutdown_recv: watch::Receiver<bool>,
-) {
-    #[cfg(not(target_arch = "wasm32"))]
-        let run = tokio::spawn;
-
-    #[cfg(target_arch = "wasm32")]
-        let run = wasm_bindgen_futures::spawn_local;
-
-    run(async move {
-        let mut last_saved_checkpoint = initial_checkpoint;
-        loop {
-            tokio::select! {
-                _ = shutdown_recv.changed() => {
-                    if *shutdown_recv.borrow() {
-                        break;
-                    }
-                }
-                checkpoint_result = checkpoint_recv.changed() => {
-                    if checkpoint_result.is_err() {
-                        break;
-                    }
-                    let new_checkpoint = *checkpoint_recv.borrow_and_update();
-                    if let Some(new_checkpoint) = new_checkpoint.as_ref() {
-                        if *new_checkpoint != last_saved_checkpoint {
-                            if db.save_checkpoint(*new_checkpoint).is_err() {
-                                warn!(target: "helios::consensus", "failed to save checkpoint");
-                            } else {
-                                info!(target: "helios::consensus", "saved checkpoint to DB: 0x{}", hex::encode(*new_checkpoint));
-                                last_saved_checkpoint = *new_checkpoint;
-                            }
-                        }
-                    }
-                }
-            }
         }
     });
+
+/*    save_new_checkpoints(
+        checkpoint_recv.clone(),
+        db.clone(),
+        initial_checkpoint,
+        shutdown_recv,
+    );*/
+
+
 }
 
-async fn sync_fallback<S: ConsensusSpec, R: ConsensusRpc<S>>(
-    inner: &mut Inner<S, R>,
+async fn sync_fallback(
+    inner: &mut Inner,
     fallback: &str,
 ) -> Result<()> {
     let checkpoint = CheckpointFallback::fetch_checkpoint_from_api(fallback).await?;
     inner.sync(checkpoint).await
 }
 
-async fn sync_all_fallbacks<S: ConsensusSpec, R: ConsensusRpc<S>>(
-    inner: &mut Inner<S, R>,
+async fn sync_all_fallbacks(
+    inner: &mut Inner,
     chain_id: u64,
 ) -> Result<()> {
     let network = Network::from_chain_id(chain_id)?;
@@ -220,100 +128,21 @@ async fn sync_all_fallbacks<S: ConsensusSpec, R: ConsensusRpc<S>>(
     inner.sync(checkpoint).await
 }
 
-impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
+impl Inner {
     pub fn new(
         rpc: &str,
-        block_send: Sender<Block<Transaction>>,
-        finalized_block_send: watch::Sender<Option<Block<Transaction>>>,
-        checkpoint_send: watch::Sender<Option<B256>>,
-        config: Arc<Config>,
-    ) -> Inner<S, R> {
-        let rpc = R::new(rpc);
+        config: Config,
+    ) -> Inner {
+        let rpc = IcpConsensusRpc::new(rpc);
 
         Inner {
             rpc,
             store: LightClientStore::default(),
             last_checkpoint: None,
-            block_send,
-            finalized_block_send,
-            checkpoint_send,
             config,
-            phantom: PhantomData,
         }
     }
 
-    pub async fn check_rpc(&self) -> Result<()> {
-        let chain_id = self.rpc.chain_id().await?;
-
-        if chain_id != self.config.chain.chain_id {
-            Err(ConsensusError::IncorrectRpcNetwork.into())
-        } else {
-            Ok(())
-        }
-    }
-
-    pub async fn get_execution_payload(&self, slot: &Option<u64>) -> Result<ExecutionPayload<S>> {
-        let slot = slot.unwrap_or(self.store.optimistic_header.beacon().slot);
-        let block = self.rpc.get_block(slot).await?;
-        let block_hash = block.tree_hash_root();
-
-        let latest_slot = self.store.optimistic_header.beacon().slot;
-        let finalized_slot = self.store.finalized_header.beacon().slot;
-
-        let verified_block_hash = if slot == latest_slot {
-            self.store.optimistic_header.beacon().tree_hash_root()
-        } else if slot == finalized_slot {
-            self.store.finalized_header.beacon().tree_hash_root()
-        } else {
-            return Err(ConsensusError::PayloadNotFound(slot).into());
-        };
-
-        if verified_block_hash != block_hash {
-            Err(ConsensusError::InvalidHeaderHash(block_hash, verified_block_hash).into())
-        } else {
-            Ok(block.body.execution_payload().clone())
-        }
-    }
-
-    pub async fn get_payloads(
-        &self,
-        start_slot: u64,
-        end_slot: u64,
-    ) -> Result<Vec<ExecutionPayload<S>>> {
-        let payloads_fut = (start_slot..end_slot)
-            .rev()
-            .map(|slot| self.rpc.get_block(slot));
-
-        let mut prev_parent_hash: B256 = *self
-            .rpc
-            .get_block(end_slot)
-            .await?
-            .body
-            .execution_payload()
-            .parent_hash();
-
-        let mut payloads: Vec<ExecutionPayload<S>> = Vec::new();
-        for result in join_all(payloads_fut).await {
-            if result.is_err() {
-                continue;
-            }
-            let payload = result.unwrap().body.execution_payload().clone();
-            if payload.block_hash() != &prev_parent_hash {
-                warn!(
-                    target: "helios::consensus",
-                    error = %ConsensusError::InvalidHeaderHash(
-                        prev_parent_hash,
-                        *payload.parent_hash(),
-                    ),
-                    "error while backfilling blocks"
-                );
-                break;
-            }
-            prev_parent_hash = *payload.parent_hash();
-            payloads.push(payload);
-        }
-        Ok(payloads)
-    }
 
     pub async fn sync(&mut self, checkpoint: B256) -> Result<()> {
         self.store = LightClientStore::default();
@@ -352,7 +181,7 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
 
         if self.store.next_sync_committee.is_none() {
             debug!(target: "helios::consensus", "checking for sync committee update");
-            let current_period = calc_sync_period::<S>(self.store.finalized_header.beacon().slot);
+            let current_period = calc_sync_period::<MainnetConsensusSpec>(self.store.finalized_header.beacon().slot);
             let mut updates = self.rpc.get_updates(current_period, 1).await?;
 
             if updates.len() == 1 {
@@ -365,20 +194,6 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
                 }
             }
         }
-
-        Ok(())
-    }
-
-    pub async fn send_blocks(&self) -> Result<()> {
-        let slot = self.store.optimistic_header.beacon().slot;
-        let payload = self.get_execution_payload(&Some(slot)).await?;
-        let finalized_slot = self.store.finalized_header.beacon().slot;
-        let finalized_payload = self.get_execution_payload(&Some(finalized_slot)).await?;
-
-        self.block_send.send(payload_to_block(payload)).await?;
-        self.finalized_block_send
-            .send(Some(payload_to_block(finalized_payload)))?;
-        self.checkpoint_send.send(self.last_checkpoint)?;
 
         Ok(())
     }
@@ -401,14 +216,14 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
         Duration::try_seconds(next_update as i64).unwrap()
     }
 
-    pub async fn bootstrap(&mut self, checkpoint: B256) -> Result<()> {
+    pub async fn bootstrap(&mut self, checkpoint: String) -> Result<()> {
         let bootstrap = self
             .rpc
             .get_bootstrap(checkpoint)
             .await
             .map_err(|err| eyre!("could not fetch bootstrap: {}", err))?;
 
-        let is_valid = self.is_valid_checkpoint(bootstrap.header().beacon().slot);
+        let is_valid = self.is_valid_checkpoint(hex_to_u64(bootstrap.header.beacon.slot.as_str()));
 
         if !is_valid {
             if self.config.strict_checkpoint_age {
@@ -424,17 +239,17 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
         Ok(())
     }
 
-    pub fn verify_update(&self, update: &Update<S>) -> Result<()> {
+    pub fn verify_update(&self, update: &Update) -> Result<()> {
         verify_update::<S>(
             update,
             self.expected_current_slot(),
             &self.store,
-            self.config.chain.genesis_root,
+            self.config.chain.genesis_root.clone(),
             &self.config.forks,
         )
     }
 
-    fn verify_finality_update(&self, update: &FinalityUpdate<S>) -> Result<()> {
+    fn verify_finality_update(&self, update: &FinalityUpdate) -> Result<()> {
         verify_finality_update::<S>(
             update,
             self.expected_current_slot(),
@@ -444,31 +259,33 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
         )
     }
 
-    pub fn apply_update(&mut self, update: &Update<S>) {
-        let new_checkpoint = apply_update::<S>(&mut self.store, update);
+    pub fn apply_update(&mut self, update: &Update) {
+        let new_checkpoint = apply_update(&mut self.store, update);
         if new_checkpoint.is_some() {
             self.last_checkpoint = new_checkpoint;
         }
     }
 
-    fn apply_finality_update(&mut self, update: &FinalityUpdate<S>) {
+    fn apply_finality_update(&mut self, update: &FinalityUpdate) {
         let prev_finalized_slot = self.store.finalized_header.beacon().slot;
         let prev_optimistic_slot = self.store.optimistic_header.beacon().slot;
-        let new_checkpoint = apply_finality_update::<S>(&mut self.store, update);
+        let new_checkpoint = apply_finality_update(&mut self.store, update);
         let new_finalized_slot = self.store.finalized_header.beacon().slot;
         let new_optimistic_slot = self.store.optimistic_header.beacon().slot;
         if new_checkpoint.is_some() {
             self.last_checkpoint = new_checkpoint;
         }
-        if new_finalized_slot != prev_finalized_slot {
+
+        //TODO
+      /*  if new_finalized_slot != prev_finalized_slot {
             self.log_finality_update(update);
         }
         if new_optimistic_slot != prev_optimistic_slot {
             self.log_optimistic_update(update)
-        }
+        }*/
     }
 
-    fn log_finality_update(&self, update: &FinalityUpdate<S>) {
+    /*fn log_finality_update(&self, update: &FinalityUpdate<S>) {
         let size = S::sync_commitee_size() as f32;
         let participation =
             get_bits::<S>(&update.sync_aggregate().sync_committee_bits) as f32 / size * 100f32;
@@ -504,7 +321,7 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
             age.num_minutes() % 60,
             age.num_seconds() % 60,
         );
-    }
+    }*/
 
     fn age(&self, slot: u64) -> Duration {
         let expected_time = self.slot_timestamp(slot);
@@ -513,7 +330,7 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
             .unwrap_or_else(|_| panic!("unreachable"));
 
         let delay = now - std::time::Duration::from_secs(expected_time);
-        chrono::Duration::from_std(delay).unwrap()
+        delay
     }
 
     pub fn expected_current_slot(&self) -> u64 {
@@ -540,7 +357,9 @@ impl<S: ConsensusSpec, R: ConsensusRpc<S>> Inner<S, R> {
     }
 }
 
-fn payload_to_block<S: ConsensusSpec>(value: ExecutionPayload<S>) -> Block<Transaction> {
+
+/*
+fn payload_to_block(value: ExecutionPayload) -> Block<Transaction> {
     let empty_nonce = fixed_bytes!("0000000000000000");
     let empty_uncle_hash =
         b256!("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
@@ -613,4 +432,4 @@ fn payload_to_block<S: ConsensusSpec>(value: ExecutionPayload<S>) -> Block<Trans
 
     Block::new(header, BlockTransactions::Full(txs))
         .with_withdrawals(Some(Withdrawals::new(withdrawals)))
-}
+}*/

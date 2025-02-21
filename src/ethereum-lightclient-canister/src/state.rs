@@ -7,16 +7,9 @@ use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
 use crate::stable_memory;
 use std::collections::BTreeMap;
-// use alloy::consensus::BlockHeader;
-// use alloy::hex;
-// use alloy::network::BlockResponse;
-// use alloy::network::primitives::HeaderResponse;
-// use alloy::primitives::B256;
-// use eyre::eyre;
-//use helios_common::http::get;
-//use helios_core::execution::rpc::ExecutionRpc;
-//use crate::consensus::spec::Ethereum;
-//use crate::ic_execution_rpc::IcExecutionRpc;
+use eyre::eyre;
+use crate::ic_execution_rpc::IcExecutionRpc;
+use crate::rpc_types::convert::hex_to_u64;
 
 use crate::stable_memory::{init_block_hash_to_header_map, init_block_height_to_header_map, Memory};
 use crate::storable_structures::BlockInfo;
@@ -114,7 +107,6 @@ pub struct InitArgs {
 
 }
 
-/*
 
 pub struct StateModifier;
 
@@ -203,26 +195,24 @@ impl StateModifier {
                 let prev = n - 1;
                 match read_state(|s|s.blocks.get(&prev).clone()) {
                     None => {
-                        let execution_rpc = IcExecutionRpc::<Ethereum>::new(read_state(|s|s.execution_rpc.clone()).as_str()).unwrap();
-                        let parent_hash = B256::from_str(block.parent_block_hash.as_str()).unwrap();
+                        let execution_rpc = IcExecutionRpc::new(read_state(|s|s.execution_rpc.clone()).as_str()).unwrap();
+                        let parent_hash = block.parent_block_hash.clone();
                         let backfilled = execution_rpc.get_block(parent_hash).await?;
-                        if block.parent_block_hash == hex::encode(backfilled.header().hash())
+                        if block.parent_block_hash == backfilled.hash
                         {
-                            let rroot = hex::encode(backfilled.header.receipts_root);
-                            let pphash = hex::encode(backfilled.header.parent_hash);
+                            let rroot = backfilled.receipts_root;
+                            let pphash = backfilled.parent_hash;
                             let block_info = BlockInfo {
                                 receipt_root: rroot,
-                                parent_block_hash: "".to_string(),
+                                parent_block_hash: pphash,
                                 block_number: prev,
                                 block_hash: block.parent_block_hash.clone(),
                             };
-                            // info!("backfilled: block={}", backfilled.header().number());
                             mutate_state(|s|{
-                                s.blocks.insert(backfilled.header().number(), block_info);
+                                s.blocks.insert(hex_to_u64(backfilled.number.as_str()), block_info);
                             });
                             Ok(true)
                         } else {
-                            // warn!("bad block backfill");
                             Err(eyre!("bad backfill"))
                         }
                     }
@@ -249,4 +239,5 @@ impl StateModifier {
     pub fn update_last_checkpoint(new_checkpoint: String) {
         mutate_state(|s|s.last_checkpoint = Some(new_checkpoint));
     }
-}*/
+}
+

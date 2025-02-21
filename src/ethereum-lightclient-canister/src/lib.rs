@@ -1,11 +1,9 @@
+
 use std::str::FromStr;
-//use alloy::primitives::B256;
 use candid::{export_service, Nat};
 use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
 use ic_cdk_timers::set_timer;
-/*use interface::{Network,
-    SetupRequest
-};*/
+
 use log::{debug, error};
 use crate::ic_consensus_rpc::IcpConsensusRpc;
 use crate::ic_execution_rpc::IcExecutionRpc;

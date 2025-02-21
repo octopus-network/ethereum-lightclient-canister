@@ -17,6 +17,9 @@ pub mod u64 {
     }
 }
 
+
+
+/*
 pub mod u256 {
     use alloy::primitives::U256;
     use serde::{de::Error, Deserializer, Serializer};
@@ -36,3 +39,4 @@ pub mod u256 {
         val.parse().map_err(D::Error::custom)
     }
 }
+*/

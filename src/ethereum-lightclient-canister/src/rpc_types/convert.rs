@@ -26,3 +26,7 @@ fn default_to_none<T: Default + PartialEq>(value: T) -> Option<T> {
         Some(value)
     }
 }
+
+pub fn hex_to_u64(str: &str) -> u64 {
+    u64::from_str_radix(str.trim_start_matches("0x"),16).unwrap()
+}
