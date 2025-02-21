@@ -1,9 +1,9 @@
-use candid::Deserialize;
+use candid::{CandidType, Deserialize};
 use serde::Serialize;
 use crate::rpc_types::lightclient_header::{LightClientHeader, SyncAggregate};
 
 
-#[derive(Serialize, Deserialize,Debug)]
+#[derive(Serialize, Deserialize,Debug, CandidType)]
 pub struct FinalityUpdate {
     pub attested_header: LightClientHeader,
     pub finalized_header: LightClientHeader,

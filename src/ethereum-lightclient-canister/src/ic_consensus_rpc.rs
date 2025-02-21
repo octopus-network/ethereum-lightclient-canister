@@ -14,13 +14,13 @@ pub struct IcpConsensusRpc {
 }
 
 impl IcpConsensusRpc {
-    fn new(path: &str) -> Self {
+    pub(crate) fn new(path: &str) -> Self {
         IcpConsensusRpc {
             rpc: path.trim_end_matches('/').to_string(),
         }
     }
 
-    async fn get_bootstrap(&self, checkpoint: String) -> anyhow::Result<Bootstrap> {
+    pub async fn get_bootstrap(&self, checkpoint: String) -> anyhow::Result<Bootstrap> {
         let root_hex = hex::encode(checkpoint);
         let req = format!(
             "{}/eth/v1/beacon/light_client/bootstrap/{}",
@@ -32,30 +32,27 @@ impl IcpConsensusRpc {
 
     }
 
-    async fn get_finality_update(&self) -> anyhow::Result<FinalityUpdate> {
-        let rpc = read_state(|s|s.consensus_rpc.clone());
-        let req = format!("{}/eth/v1/beacon/light_client/finality_update", rpc);
+    pub async fn get_finality_update(&self) -> anyhow::Result<FinalityUpdate> {
+        let req = format!("{}/eth/v1/beacon/light_client/finality_update", self.rpc.as_str());
         let res: FinalityUpdateResponse = rpc_request("finality_update", &req)
             .await
             .map_err(|e| anyhow!(e.to_string()))?;
-
         Ok(res.data)
     }
 }
 
 
-async fn rpc_request<T>(name: impl AsRef<str>, url: impl AsRef<str>) -> anyhow::Result<T>
+pub async fn rpc_request<T>(name: impl AsRef<str>, url: impl AsRef<str>) -> anyhow::Result<T>
     where
         T: serde::de::DeserializeOwned,
 {
     let name = name.as_ref();
     let url = url.as_ref();
-/*    let resp = get(url).await.map_err(|e| RpcError::new(name, e))?;
+    let resp = get(url).await.map_err(|e| RpcError::new(name, e))?;
     if resp.status != 200 {
         let e = format!("http response with status {}", resp.status);
         Err(RpcError::new(name, e))?;
     }
     let value = serde_json::from_slice(&resp.body).map_err(|e| RpcError::new(name, e))?;
-    Ok(value)*/
-    Err(anyhow!("".to_string()))
+    Ok(value)
 }

@@ -1,13 +1,14 @@
+use candid::CandidType;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize,Debug)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, CandidType)]
 pub struct LightClientHeader {
     pub beacon: Beacon,
     pub execution: Execution,
     pub execution_branch: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize,Debug)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, CandidType)]
 pub struct Execution {
     pub parent_hash: String,
     pub fee_recipient: String,
@@ -28,7 +29,7 @@ pub struct Execution {
     pub excess_blob_gas: String,
 }
 
-#[derive(Serialize, Deserialize,Debug)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, CandidType)]
 pub struct Beacon {
     pub slot: String,
     pub proposer_index: String,
@@ -38,7 +39,7 @@ pub struct Beacon {
 }
 
 
-#[derive(Serialize, Deserialize,Debug)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, CandidType)]
 pub struct SyncAggregate {
     pub sync_committee_bits: String,
     pub sync_committee_signature: String,

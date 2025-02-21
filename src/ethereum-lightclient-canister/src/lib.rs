@@ -7,6 +7,10 @@ use ic_cdk_timers::set_timer;
     SetupRequest
 };*/
 use log::{debug, error};
+use crate::ic_consensus_rpc::IcpConsensusRpc;
+use crate::ic_execution_rpc::IcExecutionRpc;
+use crate::rpc_types::block::ExecutionBlock;
+use crate::rpc_types::finality_update::FinalityUpdate;
 //use helios_core::execution::rpc::ExecutionRpc;
 //use crate::consensus::spec::Ethereum;
 //use crate::ic_execution_rpc::IcExecutionRpc;
@@ -66,12 +70,15 @@ fn post_upgrade() {
 
 
 #[update]
-pub async fn query_block(block_hash: String) -> String {
-/*    let rpc: IcExecutionRpc<Ethereum> = IcExecutionRpc::<Ethereum>::new("https://mainnet.infura.io/v3/025779c23a2d44d1b1ecef2bfb4f2b29").unwrap();
-    let b256 = B256::from_str(block_hash.as_str()).unwrap();
-    let r = rpc.get_block(b256).await.unwrap();*/
-    //serde_json::to_string(&r).unwrap()
-    "".to_string()
+pub async fn query_block(block_hash: String) -> ExecutionBlock {
+    let rpc: IcExecutionRpc = IcExecutionRpc::new("https://mainnet.infura.io/v3/025779c23a2d44d1b1ecef2bfb4f2b29").unwrap();
+    rpc.get_block(block_hash).await.unwrap()
+}
+
+#[update]
+pub async fn get_finality() -> FinalityUpdate {
+    let rpc: IcpConsensusRpc = IcpConsensusRpc::new("https://ethereum.operationsolarstorm.org");
+    rpc.get_finality_update().await.unwrap()
 }
 
 ic_cdk::export_candid!();

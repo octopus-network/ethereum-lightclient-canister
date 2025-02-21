@@ -1,1 +1,71 @@
-service : () -> { query_block : (text) -> (text) }
+type Beacon = record {
+  proposer_index : text;
+  body_root : text;
+  slot : text;
+  state_root : text;
+  parent_root : text;
+};
+type Execution = record {
+  receipts_root : text;
+  base_fee_per_gas : text;
+  block_hash : text;
+  fee_recipient : text;
+  withdrawals_root : text;
+  block_number : text;
+  transactions_root : text;
+  timestamp : text;
+  gas_limit : text;
+  prev_randao : text;
+  gas_used : text;
+  state_root : text;
+  extra_data : text;
+  parent_hash : text;
+  blob_gas_used : text;
+  logs_bloom : text;
+  excess_blob_gas : text;
+};
+type ExecutionBlock = record {
+  miner : text;
+  parentBeaconBlockRoot : text;
+  receiptsRoot : text;
+  stateRoot : text;
+  withdrawalsRoot : text;
+  hash : text;
+  difficulty : text;
+  size : text;
+  baseFeePerGas : text;
+  extraData : text;
+  transactionsRoot : text;
+  excessBlobGas : text;
+  blobGasUsed : text;
+  sha3Uncles : text;
+  nonce : text;
+  number : text;
+  timestamp : text;
+  transactions : vec text;
+  gasLimit : text;
+  logsBloom : text;
+  parentHash : text;
+  gasUsed : text;
+  mixHash : text;
+};
+type FinalityUpdate = record {
+  attested_header : LightClientHeader;
+  signature_slot : text;
+  finality_branch : vec text;
+  sync_aggregate : SyncAggregate;
+  finalized_header : LightClientHeader;
+};
+type LightClientHeader = record {
+  execution_branch : vec text;
+  beacon : Beacon;
+  execution : Execution;
+};
+type SyncAggregate = record {
+  sync_committee_bits : text;
+  sync_committee_signature : text;
+};
+service : () -> {
+  get_finality : () -> (FinalityUpdate);
+  query_block : (text) -> (ExecutionBlock);
+}
