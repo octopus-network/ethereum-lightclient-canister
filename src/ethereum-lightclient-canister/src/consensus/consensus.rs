@@ -15,14 +15,13 @@ use tokio::sync::mpsc::channel;
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::watch;
+use crate::rpc_types::lightclient_store::LightClientStore;
 
 #[derive(Debug)]
-pub struct Inner<S: ConsensusSpec, R: ConsensusRpc<S>> {
-    pub rpc: R,
-    pub store: LightClientStore<S>,
-    last_checkpoint: Option<B256>,
-    pub config: Arc<Config>,
-    phantom: PhantomData<S>,
+pub struct Inner {
+    pub store: LightClientStore,
+    last_checkpoint: Option<String>,
+    pub config: Config,
 }
 
 impl<S: ConsensusSpec, R: ConsensusRpc<S>, DB: Database> Consensus<Block>
