@@ -1,4 +1,3 @@
-use ethers_core::types::Address;
 use eyre::Result;
 use ssz_rs::{Node, Vector};
 
@@ -15,10 +14,6 @@ pub fn bytes32_to_node(bytes: &Bytes32) -> Result<Node> {
 
 pub fn bytes_to_bytes32(bytes: &[u8]) -> Bytes32 {
     Vector::from_iter(bytes.to_vec())
-}
-
-pub fn address_to_hex_string(address: &Address) -> String {
-    format!("0x{}", hex::encode(address.as_bytes()))
 }
 
 pub fn u64_to_hex_string(val: u64) -> String {

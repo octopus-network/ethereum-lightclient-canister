@@ -30,7 +30,6 @@ alloy.workspace = true
 eyre.workspace = true
 hex.workspace = true
 tracing.workspace = true
-chrono.workspace = true
 thiserror.workspace = true
 superstruct.workspace = true
 retri.workspace = true

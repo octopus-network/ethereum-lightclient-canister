@@ -1,4 +1,3 @@
-use ethers_core::types::H256;
 use serde::Deserialize;
 use thiserror::Error;
 
@@ -19,11 +18,11 @@ impl BlockNotFoundError {
 #[derive(Debug, Error)]
 #[error("slot not found: {slot:?}")]
 pub struct SlotNotFoundError {
-    slot: H256,
+    slot: String,
 }
 
 impl SlotNotFoundError {
-    pub fn new(slot: H256) -> Self {
+    pub fn new(slot: String) -> Self {
         Self { slot }
     }
 }

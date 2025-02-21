@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
-use alloy::primitives::{Address, FixedBytes, B256, U256};
-use alloy_rlp::RlpEncodable;
+
 use eyre::Result;
 use serde::{Deserialize, Serialize};
 use ssz_derive::{Decode, Encode};
