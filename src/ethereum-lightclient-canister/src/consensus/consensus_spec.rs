@@ -90,3 +90,8 @@ impl ConsensusSpec for MinimalConsensusSpec {
     type MaxWithdrawalRequests = typenum::U2;
     type MaxConsolidationRequests = typenum::U1;
 }
+
+pub fn calc_sync_period<S: ConsensusSpec>(slot: u64) -> u64 {
+    let epoch = slot / S::slots_per_epoch();
+    epoch / S::epochs_per_sync_commitee_period()
+}

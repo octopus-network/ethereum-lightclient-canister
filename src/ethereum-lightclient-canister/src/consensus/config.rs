@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tree_hash::fixed_bytes::FixedBytes;
 
 #[derive(Deserialize, Debug, Default)]
 pub struct Config {
@@ -38,7 +39,7 @@ pub struct Forks {
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Fork {
     pub epoch: u64,
-    pub fork_version: String,
+    pub fork_version: FixedBytes<4>,
 }
 
 

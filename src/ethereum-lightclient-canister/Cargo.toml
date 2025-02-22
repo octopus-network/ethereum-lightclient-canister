@@ -13,9 +13,6 @@ eyre = { workspace = true }
 
 helios_common = { workspace = true }
 #helios_config = { workspace = true }
-#helios-core = {path = "../core"}
-#helios-consensus-core = {path = "../consensus/consensus-core"}
-#helios-consensus = {package = "consensus", path = "../consensus"}
 ssz_types.workspace = true
 ciborium = "0.2.1"
 candid = "0.9.2"
@@ -33,7 +30,8 @@ serde = "1.0.183"
 serde_json = "1.0.104"
 anyhow = "1.0.72"
 async-trait = "0.1.86"
-
+ethereum_ssz_derive.workspace = true
+ethereum_ssz.workspace = true
 
 # consensus
 tree_hash.workspace = true
@@ -47,16 +45,16 @@ url = {version = "2.5.0", features = ["serde"] }
 # async/futures
 tokio.workspace = true
 futures.workspace = true
-
+bls12_381.workspace = true
+tree_hash_derive.workspace = true
 # io
-
 hex.workspace = true
 tracing.workspace = true
 thiserror.workspace = true
 superstruct.workspace = true
 retri.workspace = true
 typenum.workspace = true
-sha2 = "0.10.8"
+sha2.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4.37"

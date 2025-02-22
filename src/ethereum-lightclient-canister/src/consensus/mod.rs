@@ -7,5 +7,5 @@ pub mod verify;
 pub mod consensus_spec;
 pub mod errors;
 pub mod proof;
-mod utils;
+pub mod utils;
 

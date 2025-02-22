@@ -1,13 +1,14 @@
-
-/*use eyre::Result;
+use eyre::Result;
 use ssz_types::{BitVector, FixedVector};
+use tree_hash::fixed_bytes::B256;
 use tree_hash::TreeHash;
 use tree_hash_derive::TreeHash;
 
-use crate::{
-    consensus_spec::ConsensusSpec,
-    types::{bls::PublicKey, Forks, SyncCommittee},
-};
+
+use crate::consensus::config::Forks;
+use crate::consensus::consensus_spec::ConsensusSpec;
+use crate::rpc_types::bls::PublicKey;
+use crate::rpc_types::bootstrap::SyncCommittee;
 
 pub fn compute_committee_sign_root(header: B256, fork_data_root: B256) -> B256 {
     let domain_type = [7, 00, 00, 00];
@@ -51,7 +52,7 @@ pub fn compute_fork_data_root(
 }
 
 pub fn get_participating_keys<S: ConsensusSpec>(
-    committee: &SyncCommittee<S>,
+    committee: &SyncCommittee,
     bitfield: &BitVector<S::SyncCommitteeSize>,
 ) -> Result<Vec<PublicKey>> {
     let mut pks: Vec<PublicKey> = Vec::new();
@@ -93,4 +94,3 @@ struct ForkData {
     current_version: FixedVector<u8, typenum::U4>,
     genesis_validator_root: B256,
 }
-*/

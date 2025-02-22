@@ -4,4 +4,5 @@ pub mod http;
 pub mod icp;
 pub mod types;
 pub mod utils;
+pub mod bytes;
 

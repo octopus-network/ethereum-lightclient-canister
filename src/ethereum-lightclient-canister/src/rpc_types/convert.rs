@@ -1,19 +1,20 @@
 use std::cmp::PartialEq;
-use crate::rpc_types::lightclient_header::{Beacon, Execution, LightClientHeader};
+use tree_hash::fixed_bytes::B256;
+use crate::rpc_types::lightclient_header::{Beacon, ExecutionPayloadHeader, LightClientHeader};
 
 
 pub fn default_header_to_none(value: LightClientHeader) -> Option<LightClientHeader> {
-    if value.beacon == Beacon::default() && value.execution == Execution::default() {
+    if value.beacon == Beacon::default() && value.execution == ExecutionPayloadHeader::default() {
          None
     }else {
         Some(value)
     }
 }
 
-pub fn default_branch_to_none(value: &[String]) -> Option<Vec<String>> {
+pub fn default_branch_to_none(value: &[B256]) -> Option<Vec<B256>> {
     for elem in value {
-        if elem != "0x0000000000000000000000000000000000000000000000000000000000000000" && elem != "" {
-            return Some(value.to_vec());
+        if !elem.is_zero() {
+            return Some(value.to_vec())
         }
     }
     None

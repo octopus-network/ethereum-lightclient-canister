@@ -15,10 +15,9 @@ use tokio::sync::mpsc::channel;
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::watch;
-use crate::consensus::calc_sync_period;
 use crate::consensus::config::Config;
-use crate::consensus::consensus_spec::MainnetConsensusSpec;
-use crate::ic_consensus_rpc::IcpConsensusRpc;
+use crate::consensus::consensus_spec::{calc_sync_period, MainnetConsensusSpec};
+use crate::ic_consensus_rpc::{IcpConsensusRpc, MAX_REQUEST_LIGHT_CLIENT_UPDATES};
 use crate::rpc_types::finality_update::FinalityUpdate;
 use crate::rpc_types::lightclient_store::LightClientStore;
 use crate::rpc_types::update::Update;
@@ -180,7 +179,7 @@ impl Inner {
 
         if self.store.next_sync_committee.is_none() {
             debug!(target: "helios::consensus", "checking for sync committee update");
-            let current_period = calc_sync_period::<MainnetConsensusSpec>(self.store.finalized_header.beacon().slot);
+            let current_period = calc_sync_period::<MainnetConsensusSpec>(self.store.finalized_header.beacon.slot);
             let mut updates = self.rpc.get_updates(current_period, 1).await?;
 
             if updates.len() == 1 {
@@ -266,11 +265,11 @@ impl Inner {
     }
 
     fn apply_finality_update(&mut self, update: &FinalityUpdate) {
-        let prev_finalized_slot = self.store.finalized_header.beacon().slot;
-        let prev_optimistic_slot = self.store.optimistic_header.beacon().slot;
+        let prev_finalized_slot = self.store.finalized_header.beacon.slot;
+        let prev_optimistic_slot = self.store.optimistic_header.beacon.slot;
         let new_checkpoint = apply_finality_update(&mut self.store, update);
-        let new_finalized_slot = self.store.finalized_header.beacon().slot;
-        let new_optimistic_slot = self.store.optimistic_header.beacon().slot;
+        let new_finalized_slot = self.store.finalized_header.beacon.slot;
+        let new_optimistic_slot = self.store.optimistic_header.beacon.slot;
         if new_checkpoint.is_some() {
             self.last_checkpoint = new_checkpoint;
         }

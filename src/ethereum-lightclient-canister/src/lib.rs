@@ -68,15 +68,15 @@ fn post_upgrade() {
 
 
 #[update]
-pub async fn query_block(block_hash: String) -> ExecutionBlock {
+pub async fn query_block(block_hash: String) -> String {
     let rpc: IcExecutionRpc = IcExecutionRpc::new("https://mainnet.infura.io/v3/025779c23a2d44d1b1ecef2bfb4f2b29").unwrap();
-    rpc.get_block(block_hash).await.unwrap()
+    serde_json::to_string( &rpc.get_block(block_hash).await.unwrap()).unwrap()
 }
 
 #[update]
-pub async fn get_finality() -> FinalityUpdate {
+pub async fn get_finality() -> String {
     let rpc: IcpConsensusRpc = IcpConsensusRpc::new("https://ethereum.operationsolarstorm.org");
-    rpc.get_finality_update().await.unwrap()
+    serde_json::to_string(&rpc.get_finality_update().await.unwrap()).unwrap()
 }
 
 ic_cdk::export_candid!();

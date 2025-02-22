@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tree_hash::fixed_bytes::B256;
 use crate::rpc_types::bootstrap::SyncCommittee;
 use crate::rpc_types::convert::{default_branch_to_none, default_header_to_none};
 use crate::rpc_types::finality_update::FinalityUpdate;
@@ -23,9 +24,9 @@ pub struct GenericUpdate {
     pub sync_aggregate: SyncAggregate,
     pub signature_slot: u64,
     pub next_sync_committee: Option<SyncCommittee>,
-    pub next_sync_committee_branch: Option<Vec<String>>,
+    pub next_sync_committee_branch: Option<Vec<B256>>,
     pub finalized_header: Option<LightClientHeader>,
-    pub finality_branch: Option<Vec<String>>,
+    pub finality_branch: Option<Vec<B256>>,
 }
 
 

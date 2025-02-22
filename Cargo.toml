@@ -1,15 +1,10 @@
 [workspace]
 members = [
-  "src/consensus",
-  "src/core",
-  "src/config",
-  "src/ethereum-lightclient-canister",
-  "src/common",
-  "src/consensus/consensus-core"]
+  "src/*"
+]
 resolver = "2"
 
 [workspace.dependencies]
-contracts-abi = { path = "src/contracts-abi" }
 ethers-contract = { version = "2.0.9", default-features = false, features = [
   "abigen",
 ] }
@@ -17,16 +12,15 @@ ethers-core = "2.0.9"
 eyre = "0.6.8"
 helios_common = { package = "common", path = "src/common" }
 helios_config = { package = "config", path = "src/config" }
-helios_consensus_core = {package = "helios-consensus-core", path = "src/consensus/consensus-core"}
 
 # consensus
-ssz_types = "0.10"
+ssz_types = {path = "src/ssz_types"}
 ethereum_ssz_derive = "0.8"
 ethereum_ssz = "0.8"
-tree_hash_derive = "0.9.0"
-tree_hash = "0.9.0"
+tree_hash_derive = {path = "src/tree_hash_derive"}
+tree_hash = { path = "src/tree_hash"}
 sha2 = "0.9"
-bls12_381 = { version = "0.8.0", features = ["experimental"] }
+bls12_381 = { version = "0.8.0", features = ["experimental","groups", "pairings", "alloc"], default-features = false }
 
 # execution
 alloy = { version = "0.11.1", features = [

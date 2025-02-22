@@ -5,7 +5,7 @@ use crate::consensus::config::Forks;
 use crate::consensus::consensus_spec::ConsensusSpec;
 use crate::rpc_types::bootstrap::SyncCommittee;
 
-use crate::rpc_types::lightclient_header::{Beacon, Execution};
+use crate::rpc_types::lightclient_header::{Beacon, ExecutionPayloadHeader};
 
 pub fn is_finality_proof_valid(
     attested_header: &Beacon,
@@ -78,7 +78,7 @@ pub fn is_current_committee_proof_valid<S: ConsensusSpec>(
 
 pub fn is_execution_payload_proof_valid(
     attested_header: &Beacon,
-    execution: &Execution,
+    execution: &ExecutionPayloadHeader,
     execution_branch: &[String],
 ) -> bool {
     /*is_proof_valid(attested_header.body_root.clone(), execution, execution_branch, 4, 9)*/
