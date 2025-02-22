@@ -1,19 +1,8 @@
+use ic_cdk::{init, post_upgrade, pre_upgrade, update};
 
-use std::str::FromStr;
-use candid::{export_service, Nat};
-use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
-use ic_cdk_timers::set_timer;
-
-use log::{debug, error};
+use log::{debug};
 use crate::ic_consensus_rpc::IcpConsensusRpc;
 use crate::ic_execution_rpc::IcExecutionRpc;
-use crate::rpc_types::block::ExecutionBlock;
-use crate::rpc_types::finality_update::FinalityUpdate;
-//use helios_core::execution::rpc::ExecutionRpc;
-//use crate::consensus::spec::Ethereum;
-//use crate::ic_execution_rpc::IcExecutionRpc;
-
-use crate::state::{mutate_state, read_state};
 
 mod stable_memory;
 mod state;

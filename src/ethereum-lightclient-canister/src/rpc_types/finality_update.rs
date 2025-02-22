@@ -1,6 +1,8 @@
-use candid::{CandidType, Deserialize};
+use candid::Deserialize;
 use serde::Serialize;
+
 use tree_hash::fixed_bytes::B256;
+
 use crate::rpc_types::lightclient_header::{LightClientHeader, SyncAggregate};
 
 #[derive(Serialize, Deserialize,Debug)]

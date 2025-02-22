@@ -1,17 +1,16 @@
 use std::cell::RefCell;
-use std::str::FromStr;
+use std::collections::BTreeMap;
 
 use candid::CandidType;
-use ic_stable_structures::{StableBTreeMap};
+use eyre::eyre;
+use ic_stable_structures::StableBTreeMap;
 use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
-use crate::stable_memory;
-use std::collections::BTreeMap;
-use eyre::eyre;
+
 use crate::ic_execution_rpc::IcExecutionRpc;
 use crate::rpc_types::convert::hex_to_u64;
-
-use crate::stable_memory::{init_block_hash_to_header_map, init_block_height_to_header_map, Memory};
+use crate::stable_memory;
+use crate::stable_memory::{init_block_height_to_header_map, Memory};
 use crate::storable_structures::BlockInfo;
 
 thread_local! {

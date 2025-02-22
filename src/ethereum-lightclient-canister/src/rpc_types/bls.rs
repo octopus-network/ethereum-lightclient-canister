@@ -2,12 +2,11 @@
     hash_to_curve::{ExpandMsgXmd, HashToCurve},
     multi_miller_loop, G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, Scalar,
 };*/
-use eyre::{eyre, Result};
 use serde::{Deserialize, Serialize};
 use ssz_derive::{Decode, Encode};
+
 use helios_common::bytes::ByteVector;
 use tree_hash_derive::TreeHash;
-
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Encode, Decode, TreeHash, PartialEq)]
 pub struct PublicKey {
@@ -15,8 +14,6 @@ pub struct PublicKey {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Encode, Decode, TreeHash)]
-#[ssz(struct_behaviour = "transparent")]
-#[serde(transparent)]
 pub struct Signature {
     inner: ByteVector<typenum::U96>,
 }

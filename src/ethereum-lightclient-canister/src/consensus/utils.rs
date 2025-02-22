@@ -6,7 +6,7 @@ use tree_hash_derive::TreeHash;
 
 
 use crate::consensus::config::Forks;
-use crate::consensus::consensus_spec::ConsensusSpec;
+use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::rpc_types::bls::PublicKey;
 use crate::rpc_types::bootstrap::SyncCommittee;
 
@@ -53,7 +53,7 @@ pub fn compute_fork_data_root(
 
 pub fn get_participating_keys<S: ConsensusSpec>(
     committee: &SyncCommittee,
-    bitfield: &BitVector<S::SyncCommitteeSize>,
+    bitfield: &BitVector<<MainnetConsensusSpec as ConsensusSpec>::SyncCommitteeSize>,
 ) -> Result<Vec<PublicKey>> {
     let mut pks: Vec<PublicKey> = Vec::new();
 

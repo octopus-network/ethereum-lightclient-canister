@@ -6,7 +6,6 @@ use anyhow::anyhow;
 use crate::rpc_types::bootstrap::{Bootstrap, BootstrapResponse};
 use crate::rpc_types::finality_update::{FinalityUpdate, FinalityUpdateResponse};
 use crate::rpc_types::update::{Update, UpdateData};
-use crate::state::read_state;
 pub const MAX_REQUEST_LIGHT_CLIENT_UPDATES: u8 = 128;
 
 

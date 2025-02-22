@@ -1,11 +1,14 @@
-use candid::CandidType;
 use serde::{Deserialize, Serialize};
+use ssz::BitVector;
+
 use helios_common::bytes::{ByteList, LogsBloom};
 use ssz_types::FixedVector;
 use tree_hash::fixed_bytes::B256;
+use tree_hash_derive::TreeHash;
+
 use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::rpc_types::address::Address;
-use crate::rpc_types::bls::PublicKey;
+use crate::rpc_types::bls::Signature;
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LightClientHeader {
@@ -41,7 +44,7 @@ pub struct ExecutionPayloadHeader {
     pub excess_blob_gas: u64,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, TreeHash, Serialize, Deserialize)]
 pub struct BeaconBlockHeader {
     #[serde(with = "crate::rpc_types::serde_utils::u64")]
     pub slot: u64,
@@ -55,8 +58,8 @@ pub struct BeaconBlockHeader {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct SyncAggregate {
-    pub pubkeys: FixedVector<PublicKey, <MainnetConsensusSpec as ConsensusSpec>::SyncCommitteeSize>,
-    pub aggregate_pubkey: PublicKey,
+    pub sync_committee_bits: BitVector<<MainnetConsensusSpec as ConsensusSpec>::SyncCommitteeSize>,
+    pub sync_committee_signature: Signature,
 }
 
 

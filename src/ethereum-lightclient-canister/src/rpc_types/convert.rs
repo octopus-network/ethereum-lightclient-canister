@@ -20,7 +20,7 @@ pub fn default_branch_to_none(value: &[B256]) -> Option<Vec<B256>> {
     None
 }
 
-fn default_to_none<T: Default + PartialEq>(value: T) -> Option<T> {
+pub fn default_to_none<T: Default + PartialEq>(value: T) -> Option<T> {
     if value == T::default() {
         None
     } else {
