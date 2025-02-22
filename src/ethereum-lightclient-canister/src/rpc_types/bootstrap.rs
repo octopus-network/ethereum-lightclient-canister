@@ -1,11 +1,13 @@
 use serde::{Deserialize, Serialize};
+use ssz_types::FixedVector;
+use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::rpc_types::bls::PublicKey;
 use crate::rpc_types::lightclient_header::LightClientHeader;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct SyncCommittee {
-    pub pubkeys: Vec<PublicKey>,
-    pub aggregate_pubkey: String,
+    pub pubkeys: FixedVector<PublicKey, <MainnetConsensusSpec as ConsensusSpec>::SyncCommitteeSize>,
+    pub aggregate_pubkey: PublicKey,
 }
 
 

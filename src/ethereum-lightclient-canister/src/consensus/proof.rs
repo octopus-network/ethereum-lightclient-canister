@@ -5,11 +5,11 @@ use crate::consensus::config::Forks;
 use crate::consensus::consensus_spec::ConsensusSpec;
 use crate::rpc_types::bootstrap::SyncCommittee;
 
-use crate::rpc_types::lightclient_header::{Beacon, ExecutionPayloadHeader};
+use crate::rpc_types::lightclient_header::{BeaconBlockHeader, ExecutionPayloadHeader};
 
 pub fn is_finality_proof_valid(
-    attested_header: &Beacon,
-    finality_header: &Beacon,
+    attested_header: &BeaconBlockHeader,
+    finality_header: &BeaconBlockHeader,
     finality_branch: &[String],
     current_epoch: u64,
     forks: &Forks,
@@ -31,7 +31,7 @@ pub fn is_finality_proof_valid(
 }
 
 pub fn is_next_committee_proof_valid<S: ConsensusSpec>(
-    attested_header: &Beacon,
+    attested_header: &BeaconBlockHeader,
     next_committee: &SyncCommittee,
     next_committee_branch: &[String],
     current_epoch: u64,
@@ -54,7 +54,7 @@ pub fn is_next_committee_proof_valid<S: ConsensusSpec>(
 }
 
 pub fn is_current_committee_proof_valid<S: ConsensusSpec>(
-    attested_header: &Beacon,
+    attested_header: &BeaconBlockHeader,
     current_committee: &SyncCommittee,
     current_committee_branch: &[String],
     current_epoch: u64,
@@ -77,7 +77,7 @@ pub fn is_current_committee_proof_valid<S: ConsensusSpec>(
 }
 
 pub fn is_execution_payload_proof_valid(
-    attested_header: &Beacon,
+    attested_header: &BeaconBlockHeader,
     execution: &ExecutionPayloadHeader,
     execution_branch: &[String],
 ) -> bool {

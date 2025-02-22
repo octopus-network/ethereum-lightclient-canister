@@ -13,14 +13,14 @@ use tree_hash_derive::TreeHash;
 pub struct PublicKey {
     inner: ByteVector<typenum::U48>,
 }
-/*
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Encode, Decode, TreeHash)]
 #[ssz(struct_behaviour = "transparent")]
 #[serde(transparent)]
 pub struct Signature {
     inner: ByteVector<typenum::U96>,
 }
-
+/*
 impl PublicKey {
     fn point(&self) -> Result<G1Affine> {
         let bytes = self.inner.inner.to_vec();

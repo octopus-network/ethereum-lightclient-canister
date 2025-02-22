@@ -1,10 +1,10 @@
 use std::cmp::PartialEq;
 use tree_hash::fixed_bytes::B256;
-use crate::rpc_types::lightclient_header::{Beacon, ExecutionPayloadHeader, LightClientHeader};
+use crate::rpc_types::lightclient_header::{BeaconBlockHeader, ExecutionPayloadHeader, LightClientHeader};
 
 
 pub fn default_header_to_none(value: LightClientHeader) -> Option<LightClientHeader> {
-    if value.beacon == Beacon::default() && value.execution == ExecutionPayloadHeader::default() {
+    if value.beacon == BeaconBlockHeader::default() && value.execution == ExecutionPayloadHeader::default() {
          None
     }else {
         Some(value)
