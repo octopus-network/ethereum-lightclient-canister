@@ -21,7 +21,7 @@ pub struct LightClientStore {
 pub struct GenericUpdate {
     pub attested_header: LightClientHeader,
     pub sync_aggregate: SyncAggregate,
-    pub signature_slot: String,
+    pub signature_slot: u64,
     pub next_sync_committee: Option<SyncCommittee>,
     pub next_sync_committee_branch: Option<Vec<String>>,
     pub finalized_header: Option<LightClientHeader>,

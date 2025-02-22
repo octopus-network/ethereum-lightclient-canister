@@ -6,3 +6,5 @@ pub mod lightclient_store;
 pub mod convert;
 pub mod fixedbytes;
 pub mod update;
+pub mod serde_utils;
+pub use serde_utils::u64;

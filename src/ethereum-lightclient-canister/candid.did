@@ -1,7 +1,7 @@
 type Beacon = record {
-  proposer_index : text;
+  proposer_index : nat64;
   body_root : text;
-  slot : text;
+  slot : nat64;
   state_root : text;
   parent_root : text;
 };
@@ -11,18 +11,18 @@ type Execution = record {
   block_hash : text;
   fee_recipient : text;
   withdrawals_root : text;
-  block_number : text;
+  block_number : nat64;
   transactions_root : text;
-  timestamp : text;
-  gas_limit : text;
+  timestamp : nat64;
+  gas_limit : nat64;
   prev_randao : text;
-  gas_used : text;
+  gas_used : nat64;
   state_root : text;
   extra_data : text;
   parent_hash : text;
-  blob_gas_used : text;
+  blob_gas_used : nat64;
   logs_bloom : text;
-  excess_blob_gas : text;
+  excess_blob_gas : nat64;
 };
 type ExecutionBlock = record {
   miner : text;
@@ -51,7 +51,7 @@ type ExecutionBlock = record {
 };
 type FinalityUpdate = record {
   attested_header : LightClientHeader;
-  signature_slot : text;
+  signature_slot : nat64;
   finality_branch : vec text;
   sync_aggregate : SyncAggregate;
   finalized_header : LightClientHeader;

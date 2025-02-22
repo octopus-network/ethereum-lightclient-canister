@@ -19,7 +19,6 @@ use crate::consensus::calc_sync_period;
 use crate::consensus::config::Config;
 use crate::consensus::consensus_spec::MainnetConsensusSpec;
 use crate::ic_consensus_rpc::IcpConsensusRpc;
-use crate::rpc_types::convert::hex_to_u64;
 use crate::rpc_types::finality_update::FinalityUpdate;
 use crate::rpc_types::lightclient_store::LightClientStore;
 use crate::rpc_types::update::Update;
@@ -223,7 +222,7 @@ impl Inner {
             .await
             .map_err(|err| eyre!("could not fetch bootstrap: {}", err))?;
 
-        let is_valid = self.is_valid_checkpoint(hex_to_u64(bootstrap.header.beacon.slot.as_str()));
+        let is_valid = self.is_valid_checkpoint(bootstrap.header.beacon);
 
         if !is_valid {
             if self.config.strict_checkpoint_age {
