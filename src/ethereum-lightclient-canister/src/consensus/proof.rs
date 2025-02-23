@@ -1,3 +1,4 @@
+use sha2::{Digest, Sha256};
 use tree_hash::fixed_bytes::B256;
 use tree_hash::TreeHash;
 use crate::consensus::config::Forks;
@@ -96,7 +97,7 @@ fn is_proof_valid<T: TreeHash>(
     index: usize,
 ) -> bool {
     //TODO
-  /*  if branch.len() != depth {
+    if branch.len() != depth {
         return false;
     }
 
@@ -115,6 +116,5 @@ fn is_proof_valid<T: TreeHash>(
         derived_root = B256::from_slice(&hasher.finalize_reset());
     }
 
-    derived_root == root*/
-    true
+    derived_root == root
 }

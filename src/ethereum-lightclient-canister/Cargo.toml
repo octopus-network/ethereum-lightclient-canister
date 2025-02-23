@@ -10,7 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 eyre = { workspace = true }
-
 helios_common = { workspace = true }
 #helios_config = { workspace = true }
 ssz_types.workspace = true

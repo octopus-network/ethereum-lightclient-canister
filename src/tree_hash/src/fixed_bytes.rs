@@ -104,3 +104,9 @@ impl<'a, const N: usize> TryFrom<&'a mut [u8]> for &'a mut FixedBytes<N> {
         <&mut [u8; N]>::try_from(slice).map(|array_ref| unsafe { core::mem::transmute(array_ref) })
     }
 }
+
+impl<const N: usize> AsRef<[u8]> for FixedBytes<N> {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+}

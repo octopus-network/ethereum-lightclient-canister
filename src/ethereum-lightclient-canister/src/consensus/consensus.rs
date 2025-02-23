@@ -2,16 +2,16 @@ use std::marker::PhantomData;
 use std::process;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-
 use eyre::eyre;
 use eyre::Result;
 use serde::Deserialize;
 use tracing::{debug, error, info, warn};
 
 use tree_hash::fixed_bytes::B256;
+
 use crate::consensus::config::Config;
 use crate::consensus::consensus_spec::{calc_sync_period, ConsensusSpec, MainnetConsensusSpec};
-use crate::consensus::core::{apply_bootstrap, apply_finality_update, apply_update, expected_current_slot, verify_bootstrap, verify_finality_update, verify_update};
+use crate::consensus::core::{apply_bootstrap, apply_finality_update, apply_update, expected_current_slot, get_bits, verify_bootstrap, verify_finality_update, verify_update};
 use crate::consensus::errors::ConsensusError;
 use crate::ic_consensus_rpc::{IcpConsensusRpc, MAX_REQUEST_LIGHT_CLIENT_UPDATES};
 use crate::rpc_types::finality_update::FinalityUpdate;
@@ -28,7 +28,7 @@ pub struct Inner<S: ConsensusSpec> {
     phantom_data: PhantomData<S>
 }
 
-/*
+
 
 pub fn start_advance_thread(rpc: &str, config: Config) {
     let config_clone = config.clone();
@@ -39,57 +39,58 @@ pub fn start_advance_thread(rpc: &str, config: Config) {
         c
     } else { config.default_checkpoint };
 
-    let run = wasm_bindgen_futures::spawn_local;
-    run(async move {
-        let mut inner = Inner::<MainnetConsensusSpec>::new(
-            &rpc,
-            config.clone(),
-        );
+    /*
+       let run = wasm_bindgen_futures::spawn_local;
+       run(async move {
+           let mut inner = Inner::<MainnetConsensusSpec>::new(
+               &rpc,
+               config.clone(),
+           );
 
-        let res = inner.sync(initial_checkpoint).await;
-        if let Err(err) = res {
-            if config.load_external_fallback {
-                let res = sync_all_fallbacks(&mut inner, config.chain.chain_id).await;
-                if let Err(err) = res {
-                    error!(target: "helios::consensus", err = %err, "sync failed");
-                    process::exit(1);
-                }
-            } else if let Some(fallback) = &config.fallback {
-                let res = sync_fallback(&mut inner, fallback).await;
-                if let Err(err) = res {
-                    error!(target: "helios::consensus", err = %err, "sync failed");
-                    process::exit(1);
-                }
-            } else {
-                error!(target: "helios::consensus", err = %err, "sync failed");
-                process::exit(1);
-            }
-        }
+           let res = inner.sync(initial_checkpoint).await;
+           if let Err(err) = res {
+               if config.load_external_fallback {
+                   let res = sync_all_fallbacks(&mut inner, config.chain.chain_id).await;
+                   if let Err(err) = res {
+                       error!(target: "helios::consensus", err = %err, "sync failed");
+                       process::exit(1);
+                   }
+               } else if let Some(fallback) = &config.fallback {
+                   let res = sync_fallback(&mut inner, fallback).await;
+                   if let Err(err) = res {
+                       error!(target: "helios::consensus", err = %err, "sync failed");
+                       process::exit(1);
+                   }
+               } else {
+                   error!(target: "helios::consensus", err = %err, "sync failed");
+                   process::exit(1);
+               }
+           }
 
-        //TODO
-        //_ = inner.send_blocks().await;
+           //TODO
+           //_ = inner.send_blocks().await;
 
- /*       let start = Instant::now() + inner.duration_until_next_update().to_std().unwrap();
-        let mut interval = interval_at(start, std::time::Duration::from_secs(12));
+         let start = Instant::now() + inner.duration_until_next_update().to_std().unwrap();
+           let mut interval = interval_at(start, std::time::Duration::from_secs(12));
 
-        loop {
-            tokio::select! {
-                    _ = interval.tick() => {
-                        let res = inner.advance().await;
-                        if let Err(err) = res {
-                            warn!(target: "helios::consensus", "advance error: {}", err);
-                            continue;
-                        }
-                        //TODO
-                        //let res = inner.send_blocks().await;
-                        if let Err(err) = res {
-                            warn!(target: "helios::consensus", "send error: {}", err);
-                            continue;
-                        }
-                    }
-                }
-        }*/
-    });
+           loop {
+               tokio::select! {
+                       _ = interval.tick() => {
+                           let res = inner.advance().await;
+                           if let Err(err) = res {
+                               warn!(target: "helios::consensus", "advance error: {}", err);
+                               continue;
+                           }
+                           //TODO
+                           //let res = inner.send_blocks().await;
+                           if let Err(err) = res {
+                               warn!(target: "helios::consensus", "send error: {}", err);
+                               continue;
+                           }
+                       }
+                   }
+           }
+       });*/
 
 /*    save_new_checkpoints(
         checkpoint_recv.clone(),
@@ -100,7 +101,7 @@ pub fn start_advance_thread(rpc: &str, config: Config) {
 
 
 }
-*/
+
 async fn sync_fallback<S: ConsensusSpec>(
     inner: &mut Inner<S>,
     fallback: &str,
@@ -200,24 +201,6 @@ impl<S: ConsensusSpec> Inner<S> {
         Ok(())
     }
 
-    /// Gets the duration until the next update
-    /// Updates are scheduled for 4 seconds into each slot
-/*    pub fn duration_until_next_update(&self) -> Duration {
-        let current_slot = self.expected_current_slot();
-        let next_slot = current_slot + 1;
-        let next_slot_timestamp = self.slot_timestamp(next_slot);
-
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_else(|_| panic!("unreachable"))
-            .as_secs();
-
-        let time_to_next_slot = next_slot_timestamp - now;
-        let next_update = time_to_next_slot + 4;
-
-        Duration::try_seconds(next_update as i64).unwrap()
-    }*/
-
     pub async fn bootstrap(&mut self, checkpoint: B256) -> Result<()> {
         let bootstrap = self
             .rpc
@@ -277,62 +260,40 @@ impl<S: ConsensusSpec> Inner<S> {
         if new_checkpoint.is_some() {
             self.last_checkpoint = new_checkpoint;
         }
-
-        //TODO
-      /*  if new_finalized_slot != prev_finalized_slot {
+        if new_finalized_slot != prev_finalized_slot {
             self.log_finality_update(update);
         }
         if new_optimistic_slot != prev_optimistic_slot {
             self.log_optimistic_update(update)
-        }*/
+        }
     }
 
-    /*fn log_finality_update(&self, update: &FinalityUpdate<S>) {
+    fn log_finality_update(&self, update: &FinalityUpdate) {
         let size = S::sync_commitee_size() as f32;
         let participation =
-            get_bits::<S>(&update.sync_aggregate().sync_committee_bits) as f32 / size * 100f32;
+            get_bits::<S>(&update.sync_aggregate.sync_committee_bits) as f32 / size * 100f32;
         let decimals = if participation == 100.0 { 1 } else { 2 };
-        let age = self.age(self.store.finalized_header.beacon().slot);
 
         info!(
             target: "helios::consensus",
-            "finalized slot             slot={}  confidence={:.decimals$}%  age={:02}:{:02}:{:02}:{:02}",
-            self.store.finalized_header.beacon().slot,
+            "finalized slot             slot={}  confidence={:.decimals$}%",
+            self.store.finalized_header.beacon.slot,
             participation,
-            age.num_days(),
-            age.num_hours() % 24,
-            age.num_minutes() % 60,
-            age.num_seconds() % 60,
         );
     }
 
-    fn log_optimistic_update(&self, update: &FinalityUpdate<S>) {
+    fn log_optimistic_update(&self, update: &FinalityUpdate) {
         let size = S::sync_commitee_size() as f32;
         let participation =
-            get_bits::<S>(&update.sync_aggregate().sync_committee_bits) as f32 / size * 100f32;
+            get_bits::<S>(&update.sync_aggregate.sync_committee_bits) as f32 / size * 100f32;
         let decimals = if participation == 100.0 { 1 } else { 2 };
-        let age = self.age(self.store.optimistic_header.beacon().slot);
 
         info!(
             target: "helios::consensus",
-            "updated head               slot={}  confidence={:.decimals$}%  age={:02}:{:02}:{:02}:{:02}",
-            self.store.optimistic_header.beacon().slot,
-            participation,
-            age.num_days(),
-            age.num_hours() % 24,
-            age.num_minutes() % 60,
-            age.num_seconds() % 60,
+            "updated head               slot={}  confidence={:.decimals$}%",
+            self.store.optimistic_header.beacon.slot,
+            participation
         );
-    }*/
-
-    fn age(&self, slot: u64) -> Duration {
-        let expected_time = self.slot_timestamp(slot);
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_else(|_| panic!("unreachable"));
-
-        let delay = now - std::time::Duration::from_secs(expected_time);
-        delay
     }
 
     pub fn expected_current_slot(&self) -> u64 {
