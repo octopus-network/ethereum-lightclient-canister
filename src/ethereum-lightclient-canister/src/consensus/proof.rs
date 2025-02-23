@@ -20,15 +20,13 @@ pub fn is_finality_proof_valid(
         (41, 6)
     };
 
-    //TODO
- /*   is_proof_valid(
+    is_proof_valid(
         attested_header.state_root,
         finality_header,
         finality_branch,
         depth,
         index,
-    )*/
-    true
+    )
 }
 
 pub fn is_next_committee_proof_valid<S: ConsensusSpec>(
@@ -44,15 +42,13 @@ pub fn is_next_committee_proof_valid<S: ConsensusSpec>(
         (23, 5)
     };
 
-    //TODO
-  /*  is_proof_valid(
+    is_proof_valid(
         attested_header.state_root,
         next_committee,
         next_committee_branch,
         depth,
         index,
-    )*/
-    true
+    )
 }
 
 pub fn is_current_committee_proof_valid<S: ConsensusSpec>(
@@ -68,16 +64,13 @@ pub fn is_current_committee_proof_valid<S: ConsensusSpec>(
         (22, 5)
     };
 
-    //TODO
-
-    /*is_proof_valid(
+    is_proof_valid(
         attested_header.state_root,
         current_committee,
         current_committee_branch,
         depth,
         index,
-    )*/
-    true
+    )
 }
 
 pub fn is_execution_payload_proof_valid(

@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
 use ssz_types::FixedVector;
 use tree_hash::fixed_bytes::B256;
+use tree_hash_derive::TreeHash;
 use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::rpc_types::bls::PublicKey;
 use crate::rpc_types::lightclient_header::LightClientHeader;
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, TreeHash, Serialize, Deserialize)]
 pub struct SyncCommittee {
     pub pubkeys: FixedVector<PublicKey, <MainnetConsensusSpec as ConsensusSpec>::SyncCommitteeSize>,
     pub aggregate_pubkey: PublicKey,
