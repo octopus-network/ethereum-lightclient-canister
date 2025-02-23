@@ -3,7 +3,8 @@ mod merkle_hasher;
 mod merkleize_padded;
 mod merkleize_standard;
 pub mod fixed_bytes;
-
+pub mod u256;
+pub use u256::U256;
 pub use merkle_hasher::{Error, MerkleHasher};
 pub use merkleize_padded::merkleize_padded;
 pub use merkleize_standard::merkleize_standard;

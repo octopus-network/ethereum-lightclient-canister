@@ -40,6 +40,9 @@ impl<const N: usize> Serialize for FixedBytes<N> {
 impl<const N: usize> FixedBytes<N> {
     pub const ZERO: Self = Self([0u8;N]);
 
+    pub fn new(src: [u8;N]) -> Self{
+        Self(src)
+    }
     #[inline]
     pub fn is_zero(&self) -> bool {
         *self == Self::ZERO

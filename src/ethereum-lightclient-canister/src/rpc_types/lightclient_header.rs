@@ -5,6 +5,7 @@ use helios_common::bytes::{ByteList, LogsBloom};
 use ssz_types::FixedVector;
 use tree_hash::fixed_bytes::B256;
 use tree_hash_derive::TreeHash;
+use tree_hash::U256;
 
 use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::rpc_types::address::Address;
@@ -17,7 +18,7 @@ pub struct LightClientHeader {
     pub execution_branch: FixedVector<B256, typenum::U4>,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, TreeHash, Serialize, Deserialize)]
 pub struct ExecutionPayloadHeader {
     pub parent_hash: B256,
     pub fee_recipient: Address,
@@ -34,7 +35,7 @@ pub struct ExecutionPayloadHeader {
     #[serde(with = "crate::rpc_types::serde_utils::u64")]
     pub timestamp: u64,
     pub extra_data: ByteList<typenum::U32>,
-    pub base_fee_per_gas: String,
+    pub base_fee_per_gas: U256,
     pub block_hash: B256,
     pub transactions_root: B256,
     pub withdrawals_root: B256,

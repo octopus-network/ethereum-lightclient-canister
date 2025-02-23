@@ -85,8 +85,7 @@ pub fn is_execution_payload_proof_valid(
     execution: &ExecutionPayloadHeader,
     execution_branch: &[B256],
 ) -> bool {
-    /*is_proof_valid(attested_header.body_root.clone(), execution, execution_branch, 4, 9)*/
-    true
+    is_proof_valid(attested_header.body_root.clone(), execution, execution_branch, 4, 9)
 }
 
 fn is_proof_valid<T: TreeHash>(

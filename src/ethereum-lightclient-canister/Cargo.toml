@@ -31,7 +31,7 @@ anyhow = "1.0.72"
 async-trait = "0.1.86"
 ethereum_ssz_derive.workspace = true
 ethereum_ssz.workspace = true
-
+ruint = {version = "1.12.3", default-features = false, features = ["alloc"]}
 # consensus
 tree_hash.workspace = true
 

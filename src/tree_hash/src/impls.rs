@@ -3,6 +3,7 @@ use ssz::{Bitfield, Fixed, Variable};
 use std::sync::Arc;
 use typenum::Unsigned;
 use crate::fixed_bytes::B256;
+use crate::u256::U256;
 
 fn int_to_hash256(int: u64) -> Hash256 {
     let mut bytes = [0; HASHSIZE];
@@ -121,6 +122,25 @@ impl TreeHash for B256 {
 
     fn tree_hash_root(&self) -> Hash256 {
         *self
+    }
+}
+
+impl TreeHash for U256 {
+    fn tree_hash_type() -> TreeHashType {
+        TreeHashType::Basic
+    }
+
+    fn tree_hash_packed_encoding(&self) -> PackedEncoding {
+        PackedEncoding::from(self.to_le_bytes::<32usize>())
+    }
+
+    fn tree_hash_packing_factor() -> usize {
+        1
+    }
+
+    fn tree_hash_root(&self) -> Hash256 {
+        let r = self.to_le_bytes::<32usize>();
+        Hash256::new(r)
     }
 }
 
