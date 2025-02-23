@@ -9,4 +9,3 @@ pub mod serde_utils;
 pub mod address;
 pub mod bls;
 pub mod optimistic_update;
-pub mod u256;

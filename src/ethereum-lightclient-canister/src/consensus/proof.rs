@@ -88,14 +88,11 @@ fn is_proof_valid<T: TreeHash>(
     depth: usize,
     index: usize,
 ) -> bool {
-    //TODO
     if branch.len() != depth {
         return false;
     }
-
     let mut derived_root = leaf_object.tree_hash_root();
     let mut hasher = Sha256::new();
-
     for (i, node) in branch.iter().enumerate() {
         if (index / 2usize.pow(i as u32)) % 2 != 0 {
             hasher.update(node);
@@ -107,6 +104,5 @@ fn is_proof_valid<T: TreeHash>(
 
         derived_root = B256::from_slice(&hasher.finalize_reset());
     }
-
     derived_root == root
 }

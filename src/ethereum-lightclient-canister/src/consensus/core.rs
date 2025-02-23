@@ -507,8 +507,6 @@ fn is_valid_header<S: ConsensusSpec>(header: &LightClientHeader, forks: &Forks) 
 
         let valid_execution_type = epoch >= forks.deneb.epoch;
 
-
-
         let proof_valid =
             is_execution_payload_proof_valid(&header.beacon, &execution, &execution_branch);
 
