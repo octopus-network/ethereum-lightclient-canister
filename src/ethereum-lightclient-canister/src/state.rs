@@ -6,6 +6,7 @@ use eyre::eyre;
 use ic_stable_structures::StableBTreeMap;
 use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
+use tree_hash::fixed_bytes::B256;
 
 use crate::ic_execution_rpc::IcExecutionRpc;
 use crate::rpc_types::convert::hex_to_u64;
@@ -65,7 +66,7 @@ impl LightClientState {
 pub struct LightClientState {
     pub consensus_rpc: String,
     pub execution_rpc: String,
-    pub last_checkpoint: Option<String>,
+    pub last_checkpoint: Option<B256>,
     #[serde(skip, default = "crate::stable_memory::init_block_height_to_header_map")]
     pub blocks: StableBTreeMap<u64, BlockInfo, Memory>,
     pub hashes: BTreeMap<String, u64>,
@@ -235,7 +236,7 @@ impl StateModifier {
         Self::push_block(block).await;
     }
 
-    pub fn update_last_checkpoint(new_checkpoint: String) {
+    pub fn update_last_checkpoint(new_checkpoint: B256) {
         mutate_state(|s|s.last_checkpoint = Some(new_checkpoint));
     }
 }

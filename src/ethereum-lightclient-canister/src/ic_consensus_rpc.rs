@@ -3,6 +3,7 @@ use helios_common::errors::RpcError;
 use helios_common::http::get;
 
 use anyhow::anyhow;
+use tree_hash::fixed_bytes::B256;
 use crate::rpc_types::bootstrap::{Bootstrap, BootstrapResponse};
 use crate::rpc_types::finality_update::{FinalityUpdate, FinalityUpdateResponse};
 use crate::rpc_types::update::{Update, UpdateData};
@@ -21,14 +22,14 @@ impl IcpConsensusRpc {
         }
     }
 
-    pub async fn get_bootstrap(&self, checkpoint: String) -> anyhow::Result<Bootstrap> {
-        let root_hex = hex::encode(checkpoint);
+    pub async fn get_bootstrap(&self, checkpoint: B256) -> eyre::Result<Bootstrap> {
+        let root_hex = hex::encode(checkpoint.0.as_ref());
         let req = format!(
-            "{}/eth/v1/beacon/light_client/bootstrap/{}",
+            "{}/eth/v1/beacon/light_client/bootstrap/0x{}",
             self.rpc, root_hex
         );
 
-        let res: BootstrapResponse = rpc_request("bootstrap", req).await?;
+        let res: BootstrapResponse = rpc_request("bootstrap", req).await.map_err(|e| RpcError::new("bootstrap", e))?;
         Ok(res.data)
 
     }
@@ -43,17 +44,17 @@ impl IcpConsensusRpc {
         Ok(res.into_iter().map(|d| d.data).collect())
     }
 
-    pub async fn get_finality_update(&self) -> anyhow::Result<FinalityUpdate> {
+    pub async fn get_finality_update(&self) -> eyre::Result<FinalityUpdate> {
         let req = format!("{}/eth/v1/beacon/light_client/finality_update", self.rpc.as_str());
         let res: FinalityUpdateResponse = rpc_request("finality_update", &req)
             .await
-            .map_err(|e| anyhow!(e.to_string()))?;
+            .map_err(|e| RpcError::new("finality_update", e))?;
         Ok(res.data)
     }
 }
 
 
-pub async fn rpc_request<T>(name: impl AsRef<str>, url: impl AsRef<str>) -> anyhow::Result<T>
+pub async fn rpc_request<T>(name: impl AsRef<str>, url: impl AsRef<str>) -> eyre::Result<T>
     where
         T: serde::de::DeserializeOwned,
 {

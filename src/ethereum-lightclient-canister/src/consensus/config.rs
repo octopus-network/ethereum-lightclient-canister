@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
-use tree_hash::fixed_bytes::FixedBytes;
+use tree_hash::fixed_bytes::{B256, FixedBytes};
 
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Debug, Clone,Default)]
 pub struct Config {
     pub consensus_rpc: String,
     pub execution_rpc: String,
-    pub default_checkpoint: String,
-    pub checkpoint: Option<String>,
+    pub default_checkpoint: B256,
+    pub checkpoint: Option<B256>,
     pub chain: ChainConfig,
     pub forks: Forks,
     pub execution_forks: ForkSchedule,
@@ -22,7 +22,7 @@ pub struct Config {
 pub struct ChainConfig {
     pub chain_id: u64,
     pub genesis_time: u64,
-    pub genesis_root: String,
+    pub genesis_root: B256,
 }
 
 

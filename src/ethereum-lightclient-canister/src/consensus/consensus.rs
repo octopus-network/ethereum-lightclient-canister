@@ -1,22 +1,18 @@
-
 use std::marker::PhantomData;
 use std::process;
-use std::sync::Arc;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 
 use eyre::eyre;
 use eyre::Result;
-use futures::future::join_all;
+use serde::Deserialize;
 use tracing::{debug, error, info, warn};
-use tree_hash::TreeHash;
 
-use tokio::sync::mpsc::channel;
-use tokio::sync::mpsc::Receiver;
-use tokio::sync::mpsc::Sender;
-use tokio::sync::watch;
+use tree_hash::fixed_bytes::B256;
 use crate::consensus::config::Config;
-use crate::consensus::consensus_spec::{calc_sync_period, MainnetConsensusSpec};
+use crate::consensus::consensus_spec::{calc_sync_period, ConsensusSpec, MainnetConsensusSpec};
+use crate::consensus::core::{apply_bootstrap, apply_finality_update, apply_update, expected_current_slot, verify_bootstrap, verify_finality_update, verify_update};
+use crate::consensus::errors::ConsensusError;
 use crate::ic_consensus_rpc::{IcpConsensusRpc, MAX_REQUEST_LIGHT_CLIENT_UPDATES};
 use crate::rpc_types::finality_update::FinalityUpdate;
 use crate::rpc_types::lightclient_store::LightClientStore;
@@ -24,14 +20,15 @@ use crate::rpc_types::update::Update;
 use crate::state::read_state;
 
 #[derive(Debug)]
-pub struct Inner {
+pub struct Inner<S: ConsensusSpec> {
     pub rpc: IcpConsensusRpc,
     pub store: LightClientStore,
-    last_checkpoint: Option<String>,
+    last_checkpoint: Option<B256>,
     pub config: Config,
+    phantom_data: PhantomData<S>
 }
 
-
+/*
 
 pub fn start_advance_thread(rpc: &str, config: Config) {
     let config_clone = config.clone();
@@ -44,7 +41,7 @@ pub fn start_advance_thread(rpc: &str, config: Config) {
 
     let run = wasm_bindgen_futures::spawn_local;
     run(async move {
-        let mut inner = Inner::new(
+        let mut inner = Inner::<MainnetConsensusSpec>::new(
             &rpc,
             config.clone(),
         );
@@ -72,7 +69,7 @@ pub fn start_advance_thread(rpc: &str, config: Config) {
         //TODO
         //_ = inner.send_blocks().await;
 
-        let start = Instant::now() + inner.duration_until_next_update().to_std().unwrap();
+ /*       let start = Instant::now() + inner.duration_until_next_update().to_std().unwrap();
         let mut interval = interval_at(start, std::time::Duration::from_secs(12));
 
         loop {
@@ -91,7 +88,7 @@ pub fn start_advance_thread(rpc: &str, config: Config) {
                         }
                     }
                 }
-        }
+        }*/
     });
 
 /*    save_new_checkpoints(
@@ -103,34 +100,40 @@ pub fn start_advance_thread(rpc: &str, config: Config) {
 
 
 }
-
-async fn sync_fallback(
-    inner: &mut Inner,
+*/
+async fn sync_fallback<S: ConsensusSpec>(
+    inner: &mut Inner<S>,
     fallback: &str,
 ) -> Result<()> {
-    let checkpoint = CheckpointFallback::fetch_checkpoint_from_api(fallback).await?;
-    inner.sync(checkpoint).await
+    /*let checkpoint = CheckpointFallback::fetch_checkpoint_from_api(fallback).await?;
+    inner.sync(checkpoint).await*/
+    //TODO
+
+
+    Ok(())
 }
 
-async fn sync_all_fallbacks(
-    inner: &mut Inner,
+async fn sync_all_fallbacks<S: ConsensusSpec>(
+    inner: &mut Inner<S>,
     chain_id: u64,
 ) -> Result<()> {
-    let network = Network::from_chain_id(chain_id)?;
+/*    let network = Network::from_chain_id(chain_id)?;
     let checkpoint = CheckpointFallback::new()
         .build()
         .await?
         .fetch_latest_checkpoint(&network)
         .await?;
 
-    inner.sync(checkpoint).await
+    inner.sync(checkpoint).await*/
+    //TODO
+    Ok(())
 }
 
-impl Inner {
+impl<S: ConsensusSpec> Inner<S> {
     pub fn new(
         rpc: &str,
         config: Config,
-    ) -> Inner {
+    ) -> Inner<S> {
         let rpc = IcpConsensusRpc::new(rpc);
 
         Inner {
@@ -138,6 +141,7 @@ impl Inner {
             store: LightClientStore::default(),
             last_checkpoint: None,
             config,
+            phantom_data: Default::default(),
         }
     }
 
@@ -148,7 +152,7 @@ impl Inner {
 
         self.bootstrap(checkpoint).await?;
 
-        let current_period = calc_sync_period::<S>(self.store.finalized_header.beacon().slot);
+        let current_period = calc_sync_period::<S>(self.store.finalized_header.beacon.slot);
         let updates = self
             .rpc
             .get_updates(current_period, MAX_REQUEST_LIGHT_CLIENT_UPDATES)
@@ -166,7 +170,7 @@ impl Inner {
         info!(
             target: "helios::consensus",
             "consensus client in sync with checkpoint: 0x{}",
-            hex::encode(checkpoint)
+            hex::encode(checkpoint.0.as_ref())
         );
 
         Ok(())
@@ -198,7 +202,7 @@ impl Inner {
 
     /// Gets the duration until the next update
     /// Updates are scheduled for 4 seconds into each slot
-    pub fn duration_until_next_update(&self) -> Duration {
+/*    pub fn duration_until_next_update(&self) -> Duration {
         let current_slot = self.expected_current_slot();
         let next_slot = current_slot + 1;
         let next_slot_timestamp = self.slot_timestamp(next_slot);
@@ -212,16 +216,16 @@ impl Inner {
         let next_update = time_to_next_slot + 4;
 
         Duration::try_seconds(next_update as i64).unwrap()
-    }
+    }*/
 
-    pub async fn bootstrap(&mut self, checkpoint: String) -> Result<()> {
+    pub async fn bootstrap(&mut self, checkpoint: B256) -> Result<()> {
         let bootstrap = self
             .rpc
             .get_bootstrap(checkpoint)
             .await
             .map_err(|err| eyre!("could not fetch bootstrap: {}", err))?;
 
-        let is_valid = self.is_valid_checkpoint(bootstrap.header.beacon);
+        let is_valid = self.is_valid_checkpoint(bootstrap.header.beacon.slot);
 
         if !is_valid {
             if self.config.strict_checkpoint_age {
@@ -231,8 +235,8 @@ impl Inner {
             }
         }
 
-        verify_bootstrap(&bootstrap, checkpoint, &self.config.forks)?;
-        apply_bootstrap(&mut self.store, &bootstrap);
+        verify_bootstrap::<S>(&bootstrap, checkpoint, &self.config.forks)?;
+        apply_bootstrap::<S>(&mut self.store, &bootstrap);
 
         Ok(())
     }
@@ -258,7 +262,7 @@ impl Inner {
     }
 
     pub fn apply_update(&mut self, update: &Update) {
-        let new_checkpoint = apply_update(&mut self.store, update);
+        let new_checkpoint = apply_update::<S>(&mut self.store, update);
         if new_checkpoint.is_some() {
             self.last_checkpoint = new_checkpoint;
         }
@@ -267,7 +271,7 @@ impl Inner {
     fn apply_finality_update(&mut self, update: &FinalityUpdate) {
         let prev_finalized_slot = self.store.finalized_header.beacon.slot;
         let prev_optimistic_slot = self.store.optimistic_header.beacon.slot;
-        let new_checkpoint = apply_finality_update(&mut self.store, update);
+        let new_checkpoint = apply_finality_update::<S>(&mut self.store, update);
         let new_finalized_slot = self.store.finalized_header.beacon.slot;
         let new_optimistic_slot = self.store.optimistic_header.beacon.slot;
         if new_checkpoint.is_some() {
