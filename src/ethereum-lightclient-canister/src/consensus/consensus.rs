@@ -9,7 +9,7 @@ use tracing::{debug, error, info, warn};
 
 use tree_hash::fixed_bytes::B256;
 
-use crate::consensus::config::Config;
+use crate::config::Config;
 use crate::consensus::consensus_spec::{calc_sync_period, ConsensusSpec, MainnetConsensusSpec};
 use crate::consensus::core::{apply_bootstrap, apply_finality_update, apply_update, expected_current_slot, get_bits, verify_bootstrap, verify_finality_update, verify_update};
 use crate::consensus::errors::ConsensusError;

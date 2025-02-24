@@ -6,7 +6,7 @@ use ssz_types::BitVector;
 use tracing::{info, warn};
 use tree_hash::fixed_bytes::B256;
 use tree_hash::TreeHash;
-use crate::consensus::config::Forks;
+use crate::config::Forks;
 use crate::consensus::errors::ConsensusError;
 
 use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};

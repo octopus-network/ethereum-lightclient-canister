@@ -4,7 +4,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
 use derive_more::Index;
 
-#[derive(Debug, Copy, Index, Clone, PartialEq)]
+#[derive(Debug, Copy, Index, Clone, Eq, PartialEq)]
 pub struct FixedBytes<const N: usize>( pub [u8; N]);
 
 impl<const N: usize> Default for FixedBytes<N> {
@@ -42,6 +42,11 @@ impl<const N: usize> FixedBytes<N> {
 
     pub fn new(src: [u8;N]) -> Self{
         Self(src)
+    }
+
+    pub fn from_hex(s: &str) -> Self {
+        let r = hex::decode(s.trim_start_matches("0x")).unwrap();
+        Self::from_slice(r.as_slice())
     }
     #[inline]
     pub fn is_zero(&self) -> bool {

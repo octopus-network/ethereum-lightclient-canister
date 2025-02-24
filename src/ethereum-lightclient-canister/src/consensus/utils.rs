@@ -5,7 +5,7 @@ use tree_hash::TreeHash;
 use tree_hash_derive::TreeHash;
 
 
-use crate::consensus::config::Forks;
+use crate::config::Forks;
 use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::rpc_types::bls::PublicKey;
 use crate::rpc_types::bootstrap::SyncCommittee;

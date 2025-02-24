@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::{B256, FixedBytes};
 
+//pub mod checkpoints;
+pub mod networks;
+pub mod base;
+
 #[derive(Deserialize, Debug, Clone,Default)]
 pub struct Config {
     pub consensus_rpc: String,
@@ -48,4 +52,3 @@ pub struct Fork {
 pub struct ForkSchedule {
     pub prague_timestamp: u64,
 }
-

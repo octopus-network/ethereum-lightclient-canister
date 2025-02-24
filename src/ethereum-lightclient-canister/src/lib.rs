@@ -11,6 +11,7 @@ mod ic_consensus_rpc;
 mod consensus;
 mod ic_execution_rpc;
 mod rpc_types;
+mod config;
 
 
 #[init]
