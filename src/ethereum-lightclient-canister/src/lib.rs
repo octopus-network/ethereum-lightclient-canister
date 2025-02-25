@@ -1,6 +1,8 @@
 use ic_cdk::{init, post_upgrade, pre_upgrade, update};
 
 use log::{debug};
+use crate::config::Config;
+use crate::config::networks::mainnet;
 use crate::ic_consensus_rpc::IcpConsensusRpc;
 use crate::ic_execution_rpc::IcExecutionRpc;
 
@@ -16,6 +18,7 @@ mod config;
 
 #[init]
 async fn init() {
+    let config = Config::from(mainnet());
 
 }
 
@@ -65,8 +68,7 @@ pub async fn query_block(block_hash: String) -> String {
 
 #[update]
 pub async fn get_finality() -> String {
-    let rpc: IcpConsensusRpc = IcpConsensusRpc::new("https://ethereum.operationsolarstorm.org");
-    serde_json::to_string(&rpc.get_finality_update().await.unwrap()).unwrap()
+    serde_json::to_string(&IcpConsensusRpc::get_finality_update().await.unwrap()).unwrap()
 }
 
 ic_cdk::export_candid!();

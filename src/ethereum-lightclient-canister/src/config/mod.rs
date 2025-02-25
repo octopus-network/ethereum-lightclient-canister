@@ -1,3 +1,4 @@
+use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::{B256, FixedBytes};
 
@@ -5,7 +6,7 @@ use tree_hash::fixed_bytes::{B256, FixedBytes};
 pub mod networks;
 pub mod base;
 
-#[derive(Deserialize, Debug, Clone,Default)]
+#[derive(Deserialize, Debug, Serialize, Clone,Default)]
 pub struct Config {
     pub consensus_rpc: String,
     pub execution_rpc: String,
@@ -29,7 +30,7 @@ pub struct ChainConfig {
 }
 
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Copy, Debug, Default, Clone)]
 pub struct Forks {
     pub genesis: Fork,
     pub altair: Fork,
@@ -39,13 +40,11 @@ pub struct Forks {
     pub electra: Fork,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Copy, Debug, Default, Clone)]
 pub struct Fork {
     pub epoch: u64,
     pub fork_version: FixedBytes<4>,
 }
-
-
 
 #[derive(Clone, Copy, Serialize, Deserialize, Default, Debug)]
 pub struct ForkSchedule {

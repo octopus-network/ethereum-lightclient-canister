@@ -7,6 +7,7 @@ use ic_stable_structures::StableBTreeMap;
 use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::B256;
+use crate::config::Config;
 
 use crate::ic_execution_rpc::IcExecutionRpc;
 use crate::rpc_types::convert::hex_to_u64;
@@ -19,15 +20,17 @@ thread_local! {
 }
 
 impl LightClientState {
-    pub fn init(args: InitArgs) -> anyhow::Result<Self> {
+    pub fn init(args: InitArgs, config: Config) -> anyhow::Result<Self> {
         let ret = LightClientState {
             consensus_rpc: "".to_string(),
             execution_rpc: "".to_string(),
+            config,
             last_checkpoint: None,
             blocks: init_block_height_to_header_map(),
             hashes: Default::default(),
             finalized_block: None,
             history_length: 72000,
+
         };
         Ok(ret)
     }
@@ -66,6 +69,7 @@ impl LightClientState {
 pub struct LightClientState {
     pub consensus_rpc: String,
     pub execution_rpc: String,
+    pub config: Config,
     pub last_checkpoint: Option<B256>,
     #[serde(skip, default = "crate::stable_memory::init_block_height_to_header_map")]
     pub blocks: StableBTreeMap<u64, BlockInfo, Memory>,

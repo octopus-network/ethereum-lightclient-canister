@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use serde::Serialize;
 use tree_hash::fixed_bytes::B256;
-use crate::config::{ChainConfig, Forks, ForkSchedule};
+use crate::config::{ChainConfig, Config, Forks, ForkSchedule};
 
 /// The base configuration for a network.
 #[derive(Serialize)]
@@ -36,6 +36,26 @@ impl Default for BaseConfig {
             execution_forks: ForkSchedule::default(),
             load_external_fallback: false,
             strict_checkpoint_age: false,
+        }
+    }
+}
+
+
+
+impl From<BaseConfig> for Config {
+    fn from(base: BaseConfig) -> Self {
+        Config {
+            consensus_rpc: base.consensus_rpc.unwrap_or_default(),
+            execution_rpc: String::new(),
+            checkpoint: None,
+            default_checkpoint: base.default_checkpoint,
+            chain: base.chain,
+            forks: base.forks,
+            execution_forks: base.execution_forks,
+            max_checkpoint_age: base.max_checkpoint_age,
+            fallback: None,
+            load_external_fallback: base.load_external_fallback,
+            strict_checkpoint_age: base.strict_checkpoint_age,
         }
     }
 }

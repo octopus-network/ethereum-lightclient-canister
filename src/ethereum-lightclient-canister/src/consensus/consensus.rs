@@ -1,10 +1,11 @@
 use std::marker::PhantomData;
 use std::process;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use candid::CandidType;
 
 use eyre::eyre;
 use eyre::Result;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tracing::{debug, error, info, warn};
 
 use tree_hash::fixed_bytes::B256;
@@ -20,12 +21,10 @@ use crate::rpc_types::update::Update;
 use crate::state::{read_state, StateModifier};
 use crate::storable_structures::BlockInfo;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Inner<S: ConsensusSpec> {
-    pub rpc: IcpConsensusRpc,
     pub store: LightClientStore,
     last_checkpoint: Option<B256>,
-    pub config: Config,
     phantom_data: PhantomData<S>
 }
 
@@ -40,10 +39,7 @@ pub async fn start_advance_thread(rpc: &str, config: Config) {
         c
     } else { config.default_checkpoint };
 
-    let mut inner = Inner::<MainnetConsensusSpec>::new(
-        &rpc,
-        config.clone(),
-    );
+    let mut inner = Inner::<MainnetConsensusSpec>::new();
     let res = inner.sync(initial_checkpoint).await;
     match res {
         Ok(_) => {
@@ -145,16 +141,11 @@ async fn sync_all_fallbacks<S: ConsensusSpec>(
 
 impl<S: ConsensusSpec> Inner<S> {
     pub fn new(
-        rpc: &str,
-        config: Config,
     ) -> Inner<S> {
-        let rpc = IcpConsensusRpc::new(rpc);
 
         Inner {
-            rpc,
             store: LightClientStore::default(),
             last_checkpoint: None,
-            config,
             phantom_data: Default::default(),
         }
     }
@@ -167,9 +158,7 @@ impl<S: ConsensusSpec> Inner<S> {
         self.bootstrap(checkpoint).await?;
 
         let current_period = calc_sync_period::<S>(self.store.finalized_header.beacon.slot);
-        let updates = self
-            .rpc
-            .get_updates(current_period, MAX_REQUEST_LIGHT_CLIENT_UPDATES)
+        let updates = IcpConsensusRpc::get_updates(current_period, MAX_REQUEST_LIGHT_CLIENT_UPDATES)
             .await?;
 
         for update in updates {
@@ -177,10 +166,9 @@ impl<S: ConsensusSpec> Inner<S> {
             self.apply_update(&update);
         }
 
-        let finality_update = self.rpc.get_finality_update().await?;
+        let finality_update = IcpConsensusRpc::get_finality_update().await?;
         self.verify_finality_update(&finality_update)?;
         self.apply_finality_update(&finality_update);
-
         info!(
             target: "helios::consensus",
             "consensus client in sync with checkpoint: 0x{}",
@@ -191,14 +179,14 @@ impl<S: ConsensusSpec> Inner<S> {
     }
 
     pub async fn advance(&mut self) -> Result<()> {
-        let finality_update = self.rpc.get_finality_update().await?;
+        let finality_update = IcpConsensusRpc::get_finality_update().await?;
         self.verify_finality_update(&finality_update)?;
         self.apply_finality_update(&finality_update);
 
         if self.store.next_sync_committee.is_none() {
             debug!(target: "helios::consensus", "checking for sync committee update");
             let current_period = calc_sync_period::<MainnetConsensusSpec>(self.store.finalized_header.beacon.slot);
-            let mut updates = self.rpc.get_updates(current_period, 1).await?;
+            let mut updates = IcpConsensusRpc::get_updates(current_period, 1).await?;
 
             if updates.len() == 1 {
                 let update = updates.get_mut(0).unwrap();
@@ -215,7 +203,6 @@ impl<S: ConsensusSpec> Inner<S> {
     }
 
     pub async fn store(&self) {
-
         let e = self.store.optimistic_header.execution.clone();
         let header_info = BlockInfo {
             receipt_root: hex::encode(e.receipts_root.0.to_vec()),
@@ -240,43 +227,45 @@ impl<S: ConsensusSpec> Inner<S> {
     }
 
     pub async fn bootstrap(&mut self, checkpoint: B256) -> Result<()> {
-        let bootstrap = self
-            .rpc
-            .get_bootstrap(checkpoint)
+        let bootstrap = IcpConsensusRpc
+            ::get_bootstrap(checkpoint)
             .await
             .map_err(|err| eyre!("could not fetch bootstrap: {}", err))?;
 
         let is_valid = self.is_valid_checkpoint(bootstrap.header.beacon.slot);
-
+        let strict_checkpoint_age = read_state(|s|s.config.strict_checkpoint_age);
         if !is_valid {
-            if self.config.strict_checkpoint_age {
+            if strict_checkpoint_age {
                 return Err(ConsensusError::CheckpointTooOld.into());
             } else {
                 warn!(target: "helios::consensus", "checkpoint too old, consider using a more recent block");
             }
         }
-        verify_bootstrap::<S>(&bootstrap, checkpoint, &self.config.forks)?;
+        let forks = read_state(|s|s.config.forks);
+        verify_bootstrap::<S>(&bootstrap, checkpoint, &forks)?;
         apply_bootstrap::<S>(&mut self.store, &bootstrap);
         Ok(())
     }
 
     pub fn verify_update(&self, update: &Update) -> Result<()> {
+        let config = read_state(|s|s.config.clone());
         verify_update::<S>(
             update,
             self.expected_current_slot(),
             &self.store,
-            self.config.chain.genesis_root.clone(),
-            &self.config.forks,
+            config.chain.genesis_root.clone(),
+            &config.forks,
         )
     }
 
     fn verify_finality_update(&self, update: &FinalityUpdate) -> Result<()> {
+        let config = read_state(|s|s.config.clone());
         verify_finality_update::<S>(
             update,
             self.expected_current_slot(),
             &self.store,
-            self.config.chain.genesis_root,
-            &self.config.forks,
+            config.chain.genesis_root,
+            &config.forks,
         )
     }
 
@@ -333,13 +322,14 @@ impl<S: ConsensusSpec> Inner<S> {
     }
 
     pub fn expected_current_slot(&self) -> u64 {
-        let now = SystemTime::now();
-
-        expected_current_slot(now, self.config.chain.genesis_time)
+        let now = ic_cdk::api::time();
+        let genesis_time = read_state(|s|s.config.chain.genesis_time);
+        expected_current_slot(now, genesis_time)
     }
 
     fn slot_timestamp(&self, slot: u64) -> u64 {
-        slot * 12 + self.config.chain.genesis_time
+        let genesis_time  = read_state(|s|s.config.chain.genesis_time);
+        slot * 12 + genesis_time
     }
 
     // Determines blockhash_slot age and returns true if it is less than 14 days old
@@ -351,8 +341,8 @@ impl<S: ConsensusSpec> Inner<S> {
         let slot_age = current_slot_timestamp
             .checked_sub(blockhash_slot_timestamp)
             .unwrap_or_default();
-
-        slot_age < self.config.max_checkpoint_age
+        let max_checkpoint_age = read_state(|s|s.config.max_checkpoint_age);
+        slot_age < max_checkpoint_age
     }
 }
 
