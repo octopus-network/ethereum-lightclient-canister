@@ -12,7 +12,7 @@ ethers-core = "2.0.9"
 eyre = "0.6.8"
 helios_common = { package = "common", path = "src/common" }
 helios_config = { package = "config", path = "src/config" }
-
+ic-cdk = "0.12.2"
 # consensus
 ssz_types = {path = "src/ssz_types"}
 ethereum_ssz_derive = "0.8"
@@ -49,6 +49,7 @@ async-trait = "0.1.57"
 futures = "0.3.23"
 tokio = { version = "1", features = ["rt", "sync", "macros"] }
 
+candid = {version = "0.10"}
 # io
 reqwest = { version = "0.12.4", features = ["json"] }
 url = { version = "2.5.2", features = ["serde"] }

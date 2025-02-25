@@ -10,7 +10,7 @@ use crate::consensus::consensus::Inner;
 use crate::consensus::consensus_spec::MainnetConsensusSpec;
 use crate::ic_consensus_rpc::IcpConsensusRpc;
 use crate::ic_execution_rpc::IcExecutionRpc;
-use crate::state::{LightClientState, replace_state};
+use crate::state::{LightClientState, read_state, replace_state};
 
 mod stable_memory;
 mod state;
@@ -20,15 +20,14 @@ mod consensus;
 mod ic_execution_rpc;
 mod rpc_types;
 mod config;
+mod ic_log;
 
 
 #[init]
 async fn init(args: InitArgs) {
     let mut  config = Config::from(mainnet());
     config.execution_rpc = args.execution_rpc;
-    let inner = Inner::<MainnetConsensusSpec>::new();
     let state = LightClientState::init(config);
-
     replace_state(state);
 }
 
@@ -40,16 +39,13 @@ pub struct InitArgs {
 
 #[pre_upgrade]
 async fn pre_upgrade() {
-    debug!("Stopping client");
-
-    debug!("Client stopped");
+    read_state(|s|s.pre_upgrade());
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-  /*  let _ = ic_logger::init_with_level(log::Level::Trace);
 
-    // Workaround because cross-canister calls are not allowed in post_upgrade.
+   /* // Workaround because cross-canister calls are not allowed in post_upgrade.
     // Client will be started from a timer in a second.
     set_timer(std::time::Duration::from_secs(1), || {
         ic_cdk::spawn(async move {

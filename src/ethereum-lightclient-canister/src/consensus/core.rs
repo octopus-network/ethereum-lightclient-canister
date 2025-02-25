@@ -135,7 +135,6 @@ pub fn apply_generic_update<S: ConsensusSpec>(
     update: &GenericUpdate,
 ) -> Option<B256> {
     let committee_bits = get_bits::<S>(&update.sync_aggregate.sync_committee_bits);
-
     // update best valid update
     if store.best_valid_update.is_none()
         || is_better_update::<S>(update, &store.best_valid_update.as_ref().unwrap())

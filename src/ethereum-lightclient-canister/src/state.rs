@@ -1,18 +1,17 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 
-use candid::CandidType;
 use eyre::eyre;
 use ic_stable_structures::StableBTreeMap;
 use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
-use tree_hash::fixed_bytes::B256;
-use crate::config::Config;
-use crate::consensus::consensus::Inner;
-use crate::consensus::consensus_spec::MainnetConsensusSpec;
 
+use tree_hash::fixed_bytes::B256;
+
+use crate::config::Config;
 use crate::ic_execution_rpc::IcExecutionRpc;
 use crate::rpc_types::convert::hex_to_u64;
+use crate::rpc_types::lightclient_store::LightClientStore;
 use crate::stable_memory;
 use crate::stable_memory::{init_block_height_to_header_map, Memory};
 use crate::storable_structures::BlockInfo;
@@ -27,7 +26,7 @@ impl LightClientState {
             config,
             last_checkpoint: None,
             blocks: init_block_height_to_header_map(),
-            inner: Inner::new(),
+            store: Default::default(),
             hashes: Default::default(),
             finalized_block: None,
             history_length: 72000,
@@ -67,12 +66,11 @@ impl LightClientState {
 
 #[derive(Deserialize, Serialize)]
 pub struct LightClientState {
-
     pub config: Config,
     pub last_checkpoint: Option<B256>,
     #[serde(skip, default = "crate::stable_memory::init_block_height_to_header_map")]
     pub blocks: StableBTreeMap<u64, BlockInfo, Memory>,
-    pub inner: Inner<MainnetConsensusSpec>,
+    pub store: LightClientStore,
     pub hashes: BTreeMap<B256, u64>,
     pub finalized_block: Option<BlockInfo>,
     pub history_length: u64,
@@ -104,11 +102,6 @@ pub fn take_state<F, R>(f: F) -> R
         F: FnOnce(LightClientState) -> R,
 {
     STATE.with(|s| f(s.take().expect("State not initialized!")))
-}
-
-#[derive(CandidType, Deserialize)]
-pub struct InitArgs {
-
 }
 
 

@@ -20,16 +20,13 @@ use crate::storable_structures::BlockInfo;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Inner<S: ConsensusSpec> {
-    pub store: LightClientStore,
+    store: LightClientStore,
     phantom_data: PhantomData<S>
 }
 
 
 
 pub async fn start_advance_thread(rpc: &str, config: Config) {
-    let config_clone = config.clone();
-    let rpc = rpc.to_string();
-    let genesis_time = config.chain.genesis_time;
 
     let initial_checkpoint = if let Some(c) = read_state(|s|s.last_checkpoint.clone()) {
         c

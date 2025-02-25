@@ -18,6 +18,6 @@ tree_hash.workspace = true
 tree_hash_derive.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-ic-cdk = "0.10.0"
-candid = "0.9.3"
+ic-cdk.workspace = true
+candid.workspace = true
 getrandom = { version = "0.2.8", features = ["js"] }
