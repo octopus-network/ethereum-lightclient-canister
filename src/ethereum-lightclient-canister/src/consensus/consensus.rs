@@ -30,7 +30,7 @@ pub struct Inner<S: ConsensusSpec> {
 
 
 
-pub fn start_advance_thread(rpc: &str, config: Config) {
+pub async fn start_advance_thread(rpc: &str, config: Config) {
     let config_clone = config.clone();
     let rpc = rpc.to_string();
     let genesis_time = config.chain.genesis_time;
@@ -39,15 +39,24 @@ pub fn start_advance_thread(rpc: &str, config: Config) {
         c
     } else { config.default_checkpoint };
 
+    let mut inner = Inner::<MainnetConsensusSpec>::new(
+        &rpc,
+        config.clone(),
+    );
+    let res = inner.sync(initial_checkpoint).await;
+    match res {
+        Ok(_) => {
+            inner.stor
+        }
+        Err(_) => {}
+    }
+
     /*
        let run = wasm_bindgen_futures::spawn_local;
        run(async move {
-           let mut inner = Inner::<MainnetConsensusSpec>::new(
-               &rpc,
-               config.clone(),
-           );
 
-           let res = inner.sync(initial_checkpoint).await;
+
+
            if let Err(err) = res {
                if config.load_external_fallback {
                    let res = sync_all_fallbacks(&mut inner, config.chain.chain_id).await;
@@ -217,10 +226,8 @@ impl<S: ConsensusSpec> Inner<S> {
                 warn!(target: "helios::consensus", "checkpoint too old, consider using a more recent block");
             }
         }
-
         verify_bootstrap::<S>(&bootstrap, checkpoint, &self.config.forks)?;
         apply_bootstrap::<S>(&mut self.store, &bootstrap);
-
         Ok(())
     }
 
