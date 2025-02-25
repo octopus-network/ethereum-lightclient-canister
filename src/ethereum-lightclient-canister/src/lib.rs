@@ -1,10 +1,13 @@
+use candid::CandidType;
 use ic_cdk::{init, post_upgrade, pre_upgrade, update};
 
 use log::{debug};
+use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use crate::config::networks::mainnet;
 use crate::ic_consensus_rpc::IcpConsensusRpc;
 use crate::ic_execution_rpc::IcExecutionRpc;
+use crate::state::LightClientState;
 
 mod stable_memory;
 mod state;
@@ -17,11 +20,16 @@ mod config;
 
 
 #[init]
-async fn init() {
-    let config = Config::from(mainnet());
-
+async fn init(args: InitArgs) {
+    let mut  config = Config::from(mainnet());
+    config.execution_rpc = args.execution_rpc;
+    //let state = LightClientState::
 }
 
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct InitArgs {
+    pub execution_rpc: String,
+}
 
 
 #[pre_upgrade]

@@ -22,8 +22,6 @@ thread_local! {
 impl LightClientState {
     pub fn init(args: InitArgs, config: Config) -> anyhow::Result<Self> {
         let ret = LightClientState {
-            consensus_rpc: "".to_string(),
-            execution_rpc: "".to_string(),
             config,
             last_checkpoint: None,
             blocks: init_block_height_to_header_map(),
@@ -67,8 +65,6 @@ impl LightClientState {
 
 #[derive(Deserialize, Serialize)]
 pub struct LightClientState {
-    pub consensus_rpc: String,
-    pub execution_rpc: String,
     pub config: Config,
     pub last_checkpoint: Option<B256>,
     #[serde(skip, default = "crate::stable_memory::init_block_height_to_header_map")]
@@ -199,7 +195,7 @@ impl StateModifier {
                 let prev = n - 1;
                 match read_state(|s|s.blocks.get(&prev).clone()) {
                     None => {
-                        let execution_rpc = IcExecutionRpc::new(read_state(|s|s.execution_rpc.clone()).as_str()).unwrap();
+                        let execution_rpc = IcExecutionRpc::new(read_state(|s|s.config.execution_rpc.clone()).as_str()).unwrap();
                         let parent_hash = block.parent_block_hash.clone();
                         let backfilled = execution_rpc.get_block(parent_hash).await?;
                         if block.parent_block_hash == backfilled.hash
@@ -240,8 +236,10 @@ impl StateModifier {
         Self::push_block(block).await;
     }
 
-    pub fn update_last_checkpoint(new_checkpoint: B256) {
-        mutate_state(|s|s.last_checkpoint = Some(new_checkpoint));
+    pub fn update_last_checkpoint(new_checkpoint: Option<B256>) {
+        if new_checkpoint.is_some() {
+            mutate_state(|s|s.last_checkpoint = new_checkpoint);
+        }
     }
 }
 

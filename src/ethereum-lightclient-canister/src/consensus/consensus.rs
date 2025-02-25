@@ -1,12 +1,9 @@
 use std::marker::PhantomData;
-use std::process;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
-use candid::CandidType;
 
 use eyre::eyre;
 use eyre::Result;
 use serde::{Deserialize, Serialize};
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
 
 use tree_hash::fixed_bytes::B256;
 
@@ -24,7 +21,6 @@ use crate::storable_structures::BlockInfo;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Inner<S: ConsensusSpec> {
     pub store: LightClientStore,
-    last_checkpoint: Option<B256>,
     phantom_data: PhantomData<S>
 }
 
@@ -142,18 +138,14 @@ async fn sync_all_fallbacks<S: ConsensusSpec>(
 impl<S: ConsensusSpec> Inner<S> {
     pub fn new(
     ) -> Inner<S> {
-
         Inner {
             store: LightClientStore::default(),
-            last_checkpoint: None,
             phantom_data: Default::default(),
         }
     }
 
-
     pub async fn sync(&mut self, checkpoint: B256) -> Result<()> {
         self.store = LightClientStore::default();
-        self.last_checkpoint = None;
 
         self.bootstrap(checkpoint).await?;
 
@@ -220,10 +212,6 @@ impl<S: ConsensusSpec> Inner<S> {
             block_hash: hex::encode(e.block_hash.0.to_vec()),
         };
         StateModifier::push_finalized_block(header_info).await;
-
-        if self.last_checkpoint.is_some() {
-            StateModifier::update_last_checkpoint(self.last_checkpoint.clone().unwrap());
-        }
     }
 
     pub async fn bootstrap(&mut self, checkpoint: B256) -> Result<()> {
@@ -271,9 +259,7 @@ impl<S: ConsensusSpec> Inner<S> {
 
     pub fn apply_update(&mut self, update: &Update) {
         let new_checkpoint = apply_update::<S>(&mut self.store, update);
-        if new_checkpoint.is_some() {
-            self.last_checkpoint = new_checkpoint;
-        }
+        StateModifier::update_last_checkpoint(new_checkpoint);
     }
 
     fn apply_finality_update(&mut self, update: &FinalityUpdate) {
@@ -282,9 +268,7 @@ impl<S: ConsensusSpec> Inner<S> {
         let new_checkpoint = apply_finality_update::<S>(&mut self.store, update);
         let new_finalized_slot = self.store.finalized_header.beacon.slot;
         let new_optimistic_slot = self.store.optimistic_header.beacon.slot;
-        if new_checkpoint.is_some() {
-            self.last_checkpoint = new_checkpoint;
-        }
+        StateModifier::update_last_checkpoint(new_checkpoint);
         if new_finalized_slot != prev_finalized_slot {
             self.log_finality_update(update);
         }

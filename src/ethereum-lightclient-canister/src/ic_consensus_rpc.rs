@@ -2,7 +2,6 @@ use std::cmp;
 use helios_common::errors::RpcError;
 use helios_common::http::get;
 
-use anyhow::anyhow;
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::B256;
@@ -21,7 +20,7 @@ impl IcpConsensusRpc {
 
 
     pub async fn get_bootstrap(checkpoint: B256) -> eyre::Result<Bootstrap> {
-        let rpc = read_state(|s|s.consensus_rpc.clone());
+        let rpc = read_state(|s|s.config.consensus_rpc.clone());
         let root_hex = hex::encode(checkpoint.0.as_ref());
         let req = format!(
             "{}/eth/v1/beacon/light_client/bootstrap/0x{}",
@@ -34,7 +33,7 @@ impl IcpConsensusRpc {
     }
 
     pub(crate) async fn get_updates(period: u64, count: u8) -> eyre::Result<Vec<Update>> {
-        let rpc = read_state(|s|s.consensus_rpc.clone());
+        let rpc = read_state(|s|s.config.consensus_rpc.clone());
         let count = cmp::min(count, MAX_REQUEST_LIGHT_CLIENT_UPDATES);
         let req = format!(
             "{}/eth/v1/beacon/light_client/updates?start_period={}&count={}",
@@ -45,7 +44,7 @@ impl IcpConsensusRpc {
     }
 
     pub async fn get_finality_update() -> eyre::Result<FinalityUpdate> {
-        let rpc = read_state(|s|s.consensus_rpc.clone());
+        let rpc = read_state(|s|s.config.consensus_rpc.clone());
         let req = format!("{}/eth/v1/beacon/light_client/finality_update", rpc.as_str());
         let res: FinalityUpdateResponse = rpc_request("finality_update", &req)
             .await
