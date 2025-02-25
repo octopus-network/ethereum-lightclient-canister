@@ -1,3 +1,4 @@
+use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::B256;
 use crate::rpc_types::bootstrap::SyncCommittee;
@@ -7,7 +8,7 @@ use crate::rpc_types::lightclient_header::{LightClientHeader, SyncAggregate};
 use crate::rpc_types::optimistic_update::OptimisticUpdate;
 use crate::rpc_types::update::Update;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone,Serialize, Deserialize)]
 pub struct LightClientStore {
     pub finalized_header: LightClientHeader,
     pub current_sync_committee: SyncCommittee,

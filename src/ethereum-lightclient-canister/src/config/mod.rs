@@ -6,7 +6,7 @@ use tree_hash::fixed_bytes::{B256, FixedBytes};
 pub mod networks;
 pub mod base;
 
-#[derive(Deserialize, Debug, Serialize, Clone,Default)]
+#[derive(Deserialize,CandidType, Debug, Serialize, Clone,Default)]
 pub struct Config {
     pub consensus_rpc: String,
     pub execution_rpc: String,
@@ -22,7 +22,7 @@ pub struct Config {
 }
 
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, CandidType, Deserialize, Debug, Default, Clone)]
 pub struct ChainConfig {
     pub chain_id: u64,
     pub genesis_time: u64,
@@ -30,7 +30,7 @@ pub struct ChainConfig {
 }
 
 
-#[derive(Serialize, Deserialize, Copy, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, CandidType, Copy, Debug, Default, Clone)]
 pub struct Forks {
     pub genesis: Fork,
     pub altair: Fork,
@@ -40,13 +40,13 @@ pub struct Forks {
     pub electra: Fork,
 }
 
-#[derive(Serialize, Deserialize, Copy, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, CandidType,Copy, Debug, Default, Clone)]
 pub struct Fork {
     pub epoch: u64,
     pub fork_version: FixedBytes<4>,
 }
 
-#[derive(Clone, Copy, Serialize, Deserialize, Default, Debug)]
+#[derive(Clone, Copy,CandidType, Serialize, Deserialize, Default, Debug)]
 pub struct ForkSchedule {
     pub prague_timestamp: u64,
 }

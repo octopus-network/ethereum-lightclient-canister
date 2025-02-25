@@ -69,7 +69,7 @@ impl Network {
 pub fn mainnet() -> BaseConfig {
     BaseConfig {
         default_checkpoint: B256::from_hex(
-            "1f6f409bb10dbaf061fb2fc56a05b09e523b518062307dc74e7a50057c3a0f99"
+            "5ceacdb396b3531d7c2192ce7e233b22591689f12d703c8cf153c4af81a2c7cf"
         ),
         rpc_port: 8545,
         consensus_rpc: Some("https://ethereum.operationsolarstorm.org".to_string()),

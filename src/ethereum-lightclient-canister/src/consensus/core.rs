@@ -1,9 +1,8 @@
 use std::cmp;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 use eyre::Result;
+use ic_canister_log::log;
 use ssz_types::BitVector;
-use tracing::{info, warn};
 use tree_hash::fixed_bytes::B256;
 use tree_hash::TreeHash;
 use crate::config::Forks;
@@ -26,6 +25,7 @@ use crate::consensus::utils::{
     calculate_fork_version, compute_committee_sign_root, compute_fork_data_root,
     get_participating_keys,
 };
+use crate::ic_log::{INFO, WARNING};
 
 pub fn verify_bootstrap<S: ConsensusSpec>(
     bootstrap: &Bootstrap,
@@ -170,7 +170,7 @@ pub fn apply_generic_update<S: ConsensusSpec>(
     let should_apply_update = {
         let has_majority = committee_bits * 3 >= S::sync_commitee_size() * 2;
         if !has_majority {
-            warn!("skipping block with low vote count");
+            log!(WARNING, "skipping block with low vote count");
         }
 
         let update_is_newer = update_finalized_slot > store.finalized_header.beacon.slot;
@@ -208,7 +208,7 @@ fn apply_update_no_quorum_check<S: ConsensusSpec>(
             .next_sync_committee
             .clone_from(&update.next_sync_committee);
     } else if update_finalized_period == store_period + 1 {
-        info!(target: "helios::consensus", "sync committee updated");
+        log!(INFO, "sync committee updated");
         store.current_sync_committee = store.next_sync_committee.clone().unwrap();
         store
             .next_sync_committee

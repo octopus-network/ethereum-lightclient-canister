@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use eyre::eyre;
 use eyre::Result;
+use ic_canister_log::log;
 use serde::{Deserialize, Serialize};
-use tracing::{debug, info, warn};
 
 use tree_hash::fixed_bytes::B256;
 
@@ -12,6 +12,7 @@ use crate::consensus::consensus_spec::{calc_sync_period, ConsensusSpec, MainnetC
 use crate::consensus::core::{apply_bootstrap, apply_finality_update, apply_update, expected_current_slot, get_bits, verify_bootstrap, verify_finality_update, verify_update};
 use crate::consensus::errors::ConsensusError;
 use crate::ic_consensus_rpc::{IcpConsensusRpc, MAX_REQUEST_LIGHT_CLIENT_UPDATES};
+use crate::ic_log::{INFO, WARNING};
 use crate::rpc_types::finality_update::FinalityUpdate;
 use crate::rpc_types::lightclient_store::LightClientStore;
 use crate::rpc_types::update::Update;
@@ -20,7 +21,7 @@ use crate::storable_structures::BlockInfo;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Inner<S: ConsensusSpec> {
-    store: LightClientStore,
+    pub(crate) store: LightClientStore,
     phantom_data: PhantomData<S>
 }
 
@@ -28,7 +29,7 @@ pub struct Inner<S: ConsensusSpec> {
 
 pub async fn start_advance_thread(rpc: &str, config: Config) {
 
-    let initial_checkpoint = if let Some(c) = read_state(|s|s.last_checkpoint.clone()) {
+   /* let initial_checkpoint = if let Some(c) = read_state(|s|s.last_checkpoint.clone()) {
         c
     } else { config.default_checkpoint };
 
@@ -43,7 +44,7 @@ pub async fn start_advance_thread(rpc: &str, config: Config) {
 
         }
     }
-
+*/
     /*
        let run = wasm_bindgen_futures::spawn_local;
        run(async move {
@@ -134,18 +135,16 @@ async fn sync_all_fallbacks<S: ConsensusSpec>(
 
 impl<S: ConsensusSpec> Inner<S> {
     pub fn new(
+        store: LightClientStore,
     ) -> Inner<S> {
         Inner {
-            store: LightClientStore::default(),
+            store,
             phantom_data: Default::default(),
         }
     }
 
     pub async fn sync(&mut self, checkpoint: B256) -> Result<()> {
-        self.store = LightClientStore::default();
-
         self.bootstrap(checkpoint).await?;
-
         let current_period = calc_sync_period::<S>(self.store.finalized_header.beacon.slot);
         let updates = IcpConsensusRpc::get_updates(current_period, MAX_REQUEST_LIGHT_CLIENT_UPDATES)
             .await?;
@@ -158,8 +157,7 @@ impl<S: ConsensusSpec> Inner<S> {
         let finality_update = IcpConsensusRpc::get_finality_update().await?;
         self.verify_finality_update(&finality_update)?;
         self.apply_finality_update(&finality_update);
-        info!(
-            target: "helios::consensus",
+        log!( INFO,
             "consensus client in sync with checkpoint: 0x{}",
             hex::encode(checkpoint.0.as_ref())
         );
@@ -173,7 +171,7 @@ impl<S: ConsensusSpec> Inner<S> {
         self.apply_finality_update(&finality_update);
 
         if self.store.next_sync_committee.is_none() {
-            debug!(target: "helios::consensus", "checking for sync committee update");
+            log!(INFO, "checking for sync committee update");
             let current_period = calc_sync_period::<MainnetConsensusSpec>(self.store.finalized_header.beacon.slot);
             let mut updates = IcpConsensusRpc::get_updates(current_period, 1).await?;
 
@@ -182,7 +180,7 @@ impl<S: ConsensusSpec> Inner<S> {
                 let res = self.verify_update(update);
 
                 if res.is_ok() {
-                    info!(target: "helios::consensus", "updating sync committee");
+                    log!(INFO,"updating sync committee");
                     self.apply_update(update);
                 }
             }
@@ -223,7 +221,7 @@ impl<S: ConsensusSpec> Inner<S> {
             if strict_checkpoint_age {
                 return Err(ConsensusError::CheckpointTooOld.into());
             } else {
-                warn!(target: "helios::consensus", "checkpoint too old, consider using a more recent block");
+                log!(WARNING,"checkpoint too old, consider using a more recent block");
             }
         }
         let forks = read_state(|s|s.config.forks);
@@ -280,8 +278,7 @@ impl<S: ConsensusSpec> Inner<S> {
             get_bits::<S>(&update.sync_aggregate.sync_committee_bits) as f32 / size * 100f32;
         let decimals = if participation == 100.0 { 1 } else { 2 };
 
-        info!(
-            target: "helios::consensus",
+        log!(INFO,
             "finalized slot             slot={}  confidence={:.decimals$}%",
             self.store.finalized_header.beacon.slot,
             participation,
@@ -294,8 +291,7 @@ impl<S: ConsensusSpec> Inner<S> {
             get_bits::<S>(&update.sync_aggregate.sync_committee_bits) as f32 / size * 100f32;
         let decimals = if participation == 100.0 { 1 } else { 2 };
 
-        info!(
-            target: "helios::consensus",
+        log!(INFO,
             "updated head               slot={}  confidence={:.decimals$}%",
             self.store.optimistic_header.beacon.slot,
             participation

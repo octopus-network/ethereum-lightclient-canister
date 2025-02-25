@@ -76,6 +76,29 @@ pub struct LightClientState {
     pub history_length: u64,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct StateProfile {
+    pub config: Config,
+    pub last_checkpoint: Option<B256>,
+    pub store: LightClientStore,
+    pub hashes: BTreeMap<B256, u64>,
+    pub finalized_block: Option<BlockInfo>,
+    pub history_length: u64,
+}
+
+impl From<&LightClientState> for StateProfile {
+    fn from(value: &LightClientState) -> Self {
+        Self {
+            config: value.config.clone(),
+            last_checkpoint: value.last_checkpoint.clone(),
+            store: value.store.clone(),
+            hashes: value.hashes.clone(),
+            finalized_block: value.finalized_block.clone(),
+            history_length: value.history_length.clone(),
+        }
+    }
+}
+
 pub fn mutate_state<F, R>(f: F) -> R
     where
         F: FnOnce(&mut LightClientState) -> R,

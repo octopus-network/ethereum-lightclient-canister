@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use candid::CandidType;
 
 use serde::{Deserialize, Serialize};
 use typenum::Unsigned;
@@ -66,7 +67,7 @@ impl ConsensusSpec for MainnetConsensusSpec {
     type MaxConsolidationRequests = typenum::U2;
 }
 
-#[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Default,CandidType, Clone, Debug, PartialEq)]
 pub struct MinimalConsensusSpec;
 
 impl ConsensusSpec for MinimalConsensusSpec {

@@ -2,20 +2,35 @@
     hash_to_curve::{ExpandMsgXmd, HashToCurve},
     multi_miller_loop, G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, Scalar,
 };*/
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use ssz_derive::{Decode, Encode};
 
 use helios_common::bytes::ByteVector;
 use tree_hash_derive::TreeHash;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Encode, Decode, TreeHash, PartialEq)]
+#[derive(Debug, Clone, Default, Encode, Serialize, Decode, TreeHash, PartialEq)]
 pub struct PublicKey {
-    inner: ByteVector<typenum::U48>,
+    pub inner: ByteVector<typenum::U48>,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Encode, Decode, TreeHash)]
+impl<'de> Deserialize<'de> for PublicKey {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let inner = ByteVector::<typenum::U48>::deserialize(deserializer)?;
+        Ok(Self {inner})
+    }
+}
+
+
+#[derive(Debug, Clone, Default, Serialize, Encode, Decode, TreeHash)]
 pub struct Signature {
-    inner: ByteVector<typenum::U96>,
+    pub inner: ByteVector<typenum::U96>,
+}
+
+impl<'de> Deserialize<'de> for Signature {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let inner = ByteVector::<typenum::U96>::deserialize(deserializer)?;
+        Ok(Self {inner})
+    }
 }
 /*
 impl PublicKey {
@@ -149,3 +164,9 @@ fn hex_to_scalar(hex: &str) -> Option<Scalar> {
     Some(Scalar::from_raw(raw))
 }
 */
+
+#[test]
+pub fn test() {
+    let p:PublicKey = serde_json::from_str("0x93379f3a3f3798b634ab7642120ee4666fce038131fb6562dabfc00dd81ea9a396f5b690470869164c0f9a27db8a5203").unwrap();
+
+}

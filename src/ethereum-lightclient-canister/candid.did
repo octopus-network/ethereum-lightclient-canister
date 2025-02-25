@@ -1,5 +1,66 @@
+type Beacon = record {
+  proposer_index : text;
+  body_root : text;
+  slot : text;
+  state_root : text;
+  parent_root : text;
+};
+type Config = record {
+  load_external_fallback : bool;
+  max_checkpoint_age : int64;
+  checkpoint : opt text;
+  strict_checkpoint_age : bool;
+  execution_rpc : text;
+  default_checkpoint : text;
+  consensus_rpc : text;
+};
+type Execution = record {
+  receipts_root : text;
+  base_fee_per_gas : text;
+  block_hash : text;
+  fee_recipient : text;
+  withdrawals_root : text;
+  block_number : text;
+  transactions_root : text;
+  timestamp : text;
+  gas_limit : text;
+  prev_randao : text;
+  gas_used : text;
+  state_root : text;
+  extra_data : text;
+  parent_hash : text;
+  blob_gas_used : text;
+  logs_bloom : text;
+  excess_blob_gas : text;
+};
+type FinalizedBlock = record {
+  block_hash : text;
+  block_number : int64;
+  receipt_root : text;
+  parent_block_hash : text;
+};
 type InitArgs = record { execution_rpc : text };
+type StateProfileView = record {
+  history_length : int64;
+  finalized_block : FinalizedBlock;
+  store : Store;
+  config : Config;
+  last_checkpoint : text;
+};
+type Store = record {
+  optimistic_header : Struct1;
+  previous_max_active_participants : int64;
+  current_max_active_participants : int64;
+  finalized_header : Struct1;
+};
+type Struct1 = record {
+  execution_branch : vec text;
+  beacon : Beacon;
+  execution : Execution;
+};
 service : (InitArgs) -> {
   get_finality : () -> (text);
   query_block : (text) -> (text);
+  set_up : () -> ();
+  state : () -> (StateProfileView) query;
 }

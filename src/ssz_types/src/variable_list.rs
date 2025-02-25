@@ -5,6 +5,7 @@ use serde_derive::Serialize;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::slice::SliceIndex;
+use candid_derive::CandidType;
 use tree_hash::Hash256;
 use typenum::Unsigned;
 
@@ -47,7 +48,7 @@ pub use typenum;
 /// // Push a value to if it _does_ exceed the maximum.
 /// assert!(long.push(6).is_err());
 /// ```
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, CandidType, Serialize)]
 #[serde(transparent)]
 pub struct VariableList<T, N> {
     vec: Vec<T>,

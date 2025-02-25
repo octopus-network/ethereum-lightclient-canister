@@ -1,10 +1,11 @@
 use std::convert::TryFrom;
 use std::panic;
+use candid_derive::CandidType;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
 use derive_more::Index;
 
-#[derive(Debug, Copy, Index, Clone, Ord, Eq, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Index, Clone, CandidType,Ord, Eq, PartialEq, PartialOrd)]
 pub struct FixedBytes<const N: usize>( pub [u8; N]);
 
 impl<const N: usize> Default for FixedBytes<N> {

@@ -1,16 +1,17 @@
 use candid::CandidType;
-use ic_cdk::{init, post_upgrade, pre_upgrade, update};
-
-use log::{debug};
+use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
+use ic_cdk_timers::set_timer_interval;
 use serde::{Deserialize, Serialize};
+
 use tree_hash::fixed_bytes::B256;
+
 use crate::config::Config;
 use crate::config::networks::mainnet;
 use crate::consensus::consensus::Inner;
 use crate::consensus::consensus_spec::MainnetConsensusSpec;
-use crate::ic_consensus_rpc::IcpConsensusRpc;
 use crate::ic_execution_rpc::IcExecutionRpc;
-use crate::state::{LightClientState, read_state, replace_state};
+use crate::state::{LightClientState, mutate_state, read_state, replace_state, StateProfile};
+use crate::state_profile::StateProfileView;
 
 mod stable_memory;
 mod state;
@@ -21,6 +22,7 @@ mod ic_execution_rpc;
 mod rpc_types;
 mod config;
 mod ic_log;
+mod state_profile;
 
 
 #[init]
@@ -31,11 +33,27 @@ async fn init(args: InitArgs) {
     replace_state(state);
 }
 
+#[update]
+pub async fn set_up() {
+    let store = read_state(|s|s.store.clone());
+    let mut inner = Inner::<MainnetConsensusSpec>::new(store);
+    let c = read_state(|s|s.config.default_checkpoint);
+    let _ = inner.sync(c).await.unwrap();
+    inner.store().await;
+    mutate_state(|s|s.store = inner.store);
+    set_timer_interval(12,)
+}
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct InitArgs {
     pub execution_rpc: String,
 }
 
+#[query]
+pub fn state() -> StateProfileView {
+    let r = read_state(|s|StateProfile::from(s));
+    let s = serde_json::to_string(&r).unwrap();
+    serde_json::from_str(s.as_str()).unwrap()
+}
 
 #[pre_upgrade]
 async fn pre_upgrade() {
@@ -75,7 +93,8 @@ pub async fn query_block(block_hash: String) -> String {
 
 #[update]
 pub async fn get_finality() -> String {
-    serde_json::to_string(&IcpConsensusRpc::get_finality_update().await.unwrap()).unwrap()
+   // serde_json::to_string(&IcpConsensusRpc::get_finality_update().await.unwrap()).unwrap()
+    "".to_string()
 }
 
 ic_cdk::export_candid!();

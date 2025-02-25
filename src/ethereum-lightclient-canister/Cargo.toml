@@ -50,7 +50,6 @@ bls12_381.workspace = true
 tree_hash_derive.workspace = true
 # io
 hex.workspace = true
-tracing.workspace = true
 thiserror.workspace = true
 superstruct.workspace = true
 retri.workspace = true

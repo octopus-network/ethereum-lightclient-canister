@@ -12,10 +12,13 @@ use crate::state::read_state;
 
 pub const MAX_REQUEST_LIGHT_CLIENT_UPDATES: u8 = 128;
 
+
 #[derive(Debug, Deserialize, Serialize, CandidType)]
 pub struct IcpConsensusRpc;
 
 impl IcpConsensusRpc {
+
+
     pub async fn get_bootstrap(checkpoint: B256) -> eyre::Result<Bootstrap> {
         let rpc = read_state(|s|s.config.consensus_rpc.clone());
         let root_hex = hex::encode(checkpoint.0.as_ref());
@@ -23,8 +26,10 @@ impl IcpConsensusRpc {
             "{}/eth/v1/beacon/light_client/bootstrap/0x{}",
             rpc, root_hex
         );
+
         let res: BootstrapResponse = rpc_request("bootstrap", req).await.map_err(|e| RpcError::new("bootstrap", e))?;
         Ok(res.data)
+
     }
 
     pub(crate) async fn get_updates(period: u64, count: u8) -> eyre::Result<Vec<Update>> {
