@@ -1,1 +1,5 @@
-service : () -> { get_finality : () -> (text); query_block : (text) -> (text) }
+type InitArgs = record { execution_rpc : text };
+service : (InitArgs) -> {
+  get_finality : () -> (text);
+  query_block : (text) -> (text);
+}

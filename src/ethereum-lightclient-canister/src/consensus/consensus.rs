@@ -197,19 +197,19 @@ impl<S: ConsensusSpec> Inner<S> {
     pub async fn store(&self) {
         let e = self.store.optimistic_header.execution.clone();
         let header_info = BlockInfo {
-            receipt_root: hex::encode(e.receipts_root.0.to_vec()),
-            parent_block_hash: hex::encode(e.parent_hash.0.to_vec()),
+            receipt_root: e.receipts_root,
+            parent_block_hash: e.parent_hash,
             block_number: e.block_number,
-            block_hash: hex::encode(e.block_hash.0.to_vec()),
+            block_hash: e.block_hash,
         };
         StateModifier::push_block(header_info).await;
 
         let e = self.store.finalized_header.execution.clone();
         let header_info = BlockInfo {
-            receipt_root: hex::encode(e.receipts_root.0.to_vec()),
-            parent_block_hash: hex::encode(e.parent_hash.0.to_vec()),
+            receipt_root: e.receipts_root,
+            parent_block_hash: e.parent_hash,
             block_number: e.block_number,
-            block_hash: hex::encode(e.block_hash.0.to_vec()),
+            block_hash: e.block_hash,
         };
         StateModifier::push_finalized_block(header_info).await;
     }

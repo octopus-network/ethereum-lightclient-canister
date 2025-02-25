@@ -3,13 +3,14 @@ use candid::{CandidType, Deserialize};
 use ic_stable_structures::Storable;
 use ic_stable_structures::storable::Bound;
 use serde::Serialize;
+use tree_hash::fixed_bytes::B256;
 
-#[derive(CandidType, Deserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Eq, Clone, Debug)]
 pub struct BlockInfo {
-    pub receipt_root: String,
-    pub parent_block_hash: String,
+    pub receipt_root: B256,
+    pub parent_block_hash: B256,
     pub block_number: u64,
-    pub block_hash: String,
+    pub block_hash: B256,
 }
 
 impl Storable for BlockInfo {

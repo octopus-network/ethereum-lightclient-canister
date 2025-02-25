@@ -8,6 +8,8 @@ use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::B256;
 use crate::config::Config;
+use crate::consensus::consensus::Inner;
+use crate::consensus::consensus_spec::MainnetConsensusSpec;
 
 use crate::ic_execution_rpc::IcExecutionRpc;
 use crate::rpc_types::convert::hex_to_u64;
@@ -20,17 +22,17 @@ thread_local! {
 }
 
 impl LightClientState {
-    pub fn init(args: InitArgs, config: Config) -> anyhow::Result<Self> {
+    pub fn init(config: Config) -> Self {
         let ret = LightClientState {
             config,
             last_checkpoint: None,
             blocks: init_block_height_to_header_map(),
+            inner: Inner::new(),
             hashes: Default::default(),
             finalized_block: None,
             history_length: 72000,
-
         };
-        Ok(ret)
+        ret
     }
 
     pub fn pre_upgrade(&self) {
@@ -65,11 +67,13 @@ impl LightClientState {
 
 #[derive(Deserialize, Serialize)]
 pub struct LightClientState {
+
     pub config: Config,
     pub last_checkpoint: Option<B256>,
     #[serde(skip, default = "crate::stable_memory::init_block_height_to_header_map")]
     pub blocks: StableBTreeMap<u64, BlockInfo, Memory>,
-    pub hashes: BTreeMap<String, u64>,
+    pub inner: Inner<MainnetConsensusSpec>,
+    pub hashes: BTreeMap<B256, u64>,
     pub finalized_block: Option<BlockInfo>,
     pub history_length: u64,
 }

@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use helios_common::errors::RpcError;
 use helios_common::http::post;
+use tree_hash::fixed_bytes::B256;
 use crate::rpc_types::block::ExecutionBlock;
 
 
@@ -19,9 +20,10 @@ impl IcExecutionRpc {
         )
     }
 
-    pub(crate) async fn get_block(&self, hash: String) -> eyre::Result<ExecutionBlock> {
+    pub(crate) async fn get_block(&self, hash: B256) -> eyre::Result<ExecutionBlock> {
+        let real_hex = format!("0x{}", hex::encode(hash.0.as_slice()));
         let params = r#"{"id":1, "json_rpc":"2.0", "method": "eth_getBlockByHash", "params":["block_hash",false]}"#;
-        let params = params.replace("block_hash", &hash);
+        let params = params.replace("block_hash", &real_hex);
         post_request("eth_getBlockByHash", params, self.rpc.clone()).await
     }
 

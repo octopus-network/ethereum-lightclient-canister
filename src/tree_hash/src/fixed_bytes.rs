@@ -4,7 +4,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
 use derive_more::Index;
 
-#[derive(Debug, Copy, Index, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Index, Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub struct FixedBytes<const N: usize>( pub [u8; N]);
 
 impl<const N: usize> Default for FixedBytes<N> {
