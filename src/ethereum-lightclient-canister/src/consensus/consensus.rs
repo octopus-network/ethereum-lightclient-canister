@@ -17,7 +17,8 @@ use crate::ic_consensus_rpc::{IcpConsensusRpc, MAX_REQUEST_LIGHT_CLIENT_UPDATES}
 use crate::rpc_types::finality_update::FinalityUpdate;
 use crate::rpc_types::lightclient_store::LightClientStore;
 use crate::rpc_types::update::Update;
-use crate::state::read_state;
+use crate::state::{read_state, StateModifier};
+use crate::storable_structures::BlockInfo;
 
 #[derive(Debug)]
 pub struct Inner<S: ConsensusSpec> {
@@ -46,9 +47,12 @@ pub async fn start_advance_thread(rpc: &str, config: Config) {
     let res = inner.sync(initial_checkpoint).await;
     match res {
         Ok(_) => {
-            inner.stor
+            inner.store().await;
+            //Start task
         }
-        Err(_) => {}
+        Err(_) => {
+
+        }
     }
 
     /*
@@ -208,6 +212,31 @@ impl<S: ConsensusSpec> Inner<S> {
         }
 
         Ok(())
+    }
+
+    pub async fn store(&self) {
+
+        let e = self.store.optimistic_header.execution.clone();
+        let header_info = BlockInfo {
+            receipt_root: hex::encode(e.receipts_root.0.to_vec()),
+            parent_block_hash: hex::encode(e.parent_hash.0.to_vec()),
+            block_number: e.block_number,
+            block_hash: hex::encode(e.block_hash.0.to_vec()),
+        };
+        StateModifier::push_block(header_info).await;
+
+        let e = self.store.finalized_header.execution.clone();
+        let header_info = BlockInfo {
+            receipt_root: hex::encode(e.receipts_root.0.to_vec()),
+            parent_block_hash: hex::encode(e.parent_hash.0.to_vec()),
+            block_number: e.block_number,
+            block_hash: hex::encode(e.block_hash.0.to_vec()),
+        };
+        StateModifier::push_finalized_block(header_info).await;
+
+        if self.last_checkpoint.is_some() {
+            StateModifier::update_last_checkpoint(self.last_checkpoint.clone().unwrap());
+        }
     }
 
     pub async fn bootstrap(&mut self, checkpoint: B256) -> Result<()> {
