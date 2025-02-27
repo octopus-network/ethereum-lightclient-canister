@@ -43,10 +43,10 @@ impl LightClientState {
         let mut writer = Writer::new(&mut memory, 0);
         writer
             .write(&len.to_le_bytes())
-            .expect("failed to save hub state len");
+            .expect("failed to save lightclient state len");
         writer
             .write(&state_bytes)
-            .expect("failed to save hub state");
+            .expect("failed to save lightclient state");
     }
 
     pub fn post_upgrade() {

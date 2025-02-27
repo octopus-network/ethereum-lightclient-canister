@@ -14,6 +14,7 @@ use crate::consensus::consensus_spec::MainnetConsensusSpec;
 use crate::ic_execution_rpc::IcExecutionRpc;
 use crate::state::{LightClientState, mutate_state, read_state, replace_state, StateProfile};
 use crate::state_profile::StateProfileView;
+use crate::storable_structures::BlockInfo;
 use crate::tasks::lightclient_task;
 
 mod stable_memory;
@@ -76,24 +77,8 @@ async fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-
-   /* // Workaround because cross-canister calls are not allowed in post_upgrade.
-    // Client will be started from a timer in a second.
-    set_timer(std::time::Duration::from_secs(1), || {
-        ic_cdk::spawn(async move {
-            let (consensus_rpc_url, execution_rpc_url) = read_state(|s|(s.consensus_rpc.clone(), s.execution_rpc.clone()));
-            let network = Network::Mainnet;
-            let checkpoint = read_state(|s|s.last_checkpoint.clone());
-
-            debug!(
-                "Resuming client with: network = {}, execution_rpc_url = {}, consensus_rpc_url = {}, checkpoint: {:?}",
-                network,
-                &execution_rpc_url,
-                &consensus_rpc_url,
-                &checkpoint,
-            );
-        });
-    });*/
+    LightClientState::post_upgrade();
+    set_timer_interval(Duration::from_secs(12), lightclient_task);
 }
 
 
@@ -105,10 +90,9 @@ pub async fn query_block(block_hash: String) -> String {
 
 }
 
-#[update]
-pub async fn get_finality() -> String {
-   // serde_json::to_string(&IcpConsensusRpc::get_finality_update().await.unwrap()).unwrap()
-    "".to_string()
+#[query]
+pub async fn get_finality(height: u64) -> Option<BlockInfo> {
+    read_state(|s|s.blocks.get(&height))
 }
 
 ic_cdk::export_candid!();
