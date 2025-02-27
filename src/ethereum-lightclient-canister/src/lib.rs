@@ -1,4 +1,6 @@
+use std::time::Duration;
 use candid::CandidType;
+use ic_canisters_http_types::{HttpRequest, HttpResponse};
 use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
 use ic_cdk_timers::set_timer_interval;
 use serde::{Deserialize, Serialize};
@@ -12,6 +14,7 @@ use crate::consensus::consensus_spec::MainnetConsensusSpec;
 use crate::ic_execution_rpc::IcExecutionRpc;
 use crate::state::{LightClientState, mutate_state, read_state, replace_state, StateProfile};
 use crate::state_profile::StateProfileView;
+use crate::tasks::lightclient_task;
 
 mod stable_memory;
 mod state;
@@ -21,8 +24,10 @@ mod consensus;
 mod ic_execution_rpc;
 mod rpc_types;
 mod config;
-mod ic_log;
+pub mod ic_log;
 mod state_profile;
+mod guard;
+mod tasks;
 
 
 #[init]
@@ -41,8 +46,17 @@ pub async fn set_up() {
     let _ = inner.sync(c).await.unwrap();
     inner.store().await;
     mutate_state(|s|s.store = inner.store);
-    set_timer_interval(12,)
+    set_timer_interval(Duration::from_secs(12), lightclient_task);
 }
+
+#[query(hidden = true)]
+fn http_request(req: HttpRequest) -> HttpResponse {
+    if ic_cdk::api::data_certificate().is_none() {
+        ic_cdk::trap("update call rejected");
+    }
+    ic_log::http_request(req)
+}
+
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct InitArgs {
     pub execution_rpc: String,

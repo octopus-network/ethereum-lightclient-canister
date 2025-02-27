@@ -30,6 +30,7 @@ impl LightClientState {
             hashes: Default::default(),
             finalized_block: None,
             history_length: 72000,
+            is_timer_running: false,
         };
         ret
     }
@@ -74,6 +75,8 @@ pub struct LightClientState {
     pub hashes: BTreeMap<B256, u64>,
     pub finalized_block: Option<BlockInfo>,
     pub history_length: u64,
+    #[serde(skip)]
+    pub is_timer_running: bool,
 }
 
 #[derive(Serialize, Deserialize)]
