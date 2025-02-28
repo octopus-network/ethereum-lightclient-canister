@@ -60,7 +60,5 @@ pub struct EvmJsonRpcRequest {
 
 #[derive(Deserialize, Clone, Debug, Default)]
 pub struct EvmRpcResponse<T> {
-    pub id: u32,
-    pub jsonrpc: String,
     pub result: Option<T>,
 }

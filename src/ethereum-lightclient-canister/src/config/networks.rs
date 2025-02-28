@@ -48,24 +48,6 @@ impl Display for Network {
     }
 }
 
-impl Network {
-    pub fn to_base_config(&self) -> BaseConfig {
-        match self {
-            Self::Mainnet => mainnet(),
-            _ => panic!("unsupport network")
-        }
-    }
-
-    pub fn from_chain_id(id: u64) -> Result<Self> {
-        match id {
-            1 => Ok(Network::Mainnet),
-            11155111 => Ok(Network::Sepolia),
-            17000 => Ok(Network::Holesky),
-            _ => Err(eyre::eyre!("chain id not known")),
-        }
-    }
-}
-
 pub fn mainnet() -> BaseConfig {
     BaseConfig {
         default_checkpoint: B256::from_hex(

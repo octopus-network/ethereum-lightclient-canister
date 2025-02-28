@@ -3,8 +3,14 @@
     "ethereum_lightclient_canister": {
       "candid": "src/ethereum-lightclient-canister/candid.did",
       "package": "ethereum_lightclient_canister",
-      "type": "rust",
-      "optimize": "size"
+      "type": "custom",
+      "wasm": "target/wasm32-unknown-unknown/release/ethereum_lightclient_canister.wasm",
+      "gzip": true,
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
     }
   },
   "defaults": {

@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 
 use eyre::eyre;
+use ic_canister_log::log;
 use ic_stable_structures::StableBTreeMap;
 use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
@@ -10,6 +11,7 @@ use tree_hash::fixed_bytes::B256;
 
 use crate::config::Config;
 use crate::ic_execution_rpc::IcExecutionRpc;
+use crate::ic_log::INFO;
 use crate::rpc_types::convert::hex_to_u64;
 use crate::rpc_types::lightclient_store::LightClientStore;
 use crate::stable_memory;
@@ -79,7 +81,7 @@ pub struct LightClientState {
     pub is_timer_running: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Debug)]
 pub struct StateProfile {
     pub config: Config,
     pub last_checkpoint: Option<B256>,
@@ -152,7 +154,7 @@ impl StateModifier {
             }
             let (link_child, link_parent) = read_state(|s|(s.blocks.get(&n), s.blocks.get(&(n-1))));
             if let (Some(parent), Some(child)) = (link_parent, link_child) {
-                if child.block_hash != parent.block_hash {
+                if child.parent_block_hash != parent.block_hash {
                    // warn!("detected block reorganization");
                     Self::prune_before(n);
                 }
@@ -209,7 +211,6 @@ impl StateModifier {
         if read_state(|s|s.blocks.len() < 2) {
             return Ok(false);
         }
-
         match read_state(|s|s.blocks.get(&n)) {
             None => {
                 Ok(false)
@@ -233,6 +234,7 @@ impl StateModifier {
                             };
                             mutate_state(|s|{
                                 s.blocks.insert(hex_to_u64(backfilled.number.as_str()), block_info);
+                                log!(INFO, "backfill block {}", backfilled.number);
                             });
                             Ok(true)
                         } else {

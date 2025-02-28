@@ -46,7 +46,8 @@ url = {version = "2.5.0", features = ["serde"] }
 # async/futures
 tokio.workspace = true
 futures.workspace = true
-bls12_381.workspace = true
+ic_bls12_381.workspace = true
+sha3 = "0.10.8"
 tree_hash_derive.workspace = true
 # io
 hex.workspace = true

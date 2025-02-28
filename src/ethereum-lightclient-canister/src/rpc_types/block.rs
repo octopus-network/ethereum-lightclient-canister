@@ -1,4 +1,3 @@
-use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::B256;
 use crate::rpc_types::address::Address;

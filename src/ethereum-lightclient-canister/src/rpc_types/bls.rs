@@ -1,14 +1,16 @@
-/*use bls12_381::{
+/*use ic_bls12_381::{
     hash_to_curve::{ExpandMsgXmd, HashToCurve},
     multi_miller_loop, G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, Scalar,
 };*/
+use eyre::eyre;
+use eyre::Result;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use ssz_derive::{Decode, Encode};
 
 use helios_common::bytes::ByteVector;
 use tree_hash_derive::TreeHash;
 
-#[derive(Debug, Clone, Default, Encode, Serialize, Decode, TreeHash, PartialEq)]
+#[derive(Debug, Clone, Default, Encode, Decode, TreeHash, PartialEq)]
 pub struct PublicKey {
     pub inner: ByteVector<typenum::U48>,
 }
@@ -20,8 +22,14 @@ impl<'de> Deserialize<'de> for PublicKey {
     }
 }
 
+impl Serialize for PublicKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        ByteVector::<typenum::U48>::serialize(&self.inner, serializer)
+    }
+}
 
-#[derive(Debug, Clone, Default, Serialize, Encode, Decode, TreeHash)]
+
+#[derive(Debug, Clone, Default, Encode, Decode, TreeHash)]
 pub struct Signature {
     pub inner: ByteVector<typenum::U96>,
 }
@@ -32,9 +40,17 @@ impl<'de> Deserialize<'de> for Signature {
         Ok(Self {inner})
     }
 }
+
+impl Serialize for Signature {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        ByteVector::<typenum::U96>::serialize(&self.inner, serializer)
+    }
+}
+
 /*
+
 impl PublicKey {
-    fn point(&self) -> Result<G1Affine> {
+    fn point(&self) -> eyre::Result<G1Affine> {
         let bytes = self.inner.inner.to_vec();
         let bytes = bytes.as_slice().try_into()?;
         let point_opt = G1Affine::from_compressed(bytes);
@@ -86,7 +102,7 @@ impl Signature {
         ate2_evaluation(&sig_point, &generator_g1_negative, &msg_hash, &key_point)
     }
 
-    fn point(&self) -> Result<G2Affine> {
+    fn point(&self) -> eyre::Result<G2Affine> {
         let bytes = self.inner.inner.to_vec();
         let bytes = bytes.as_slice().try_into()?;
         let point_opt = G2Affine::from_compressed(bytes);

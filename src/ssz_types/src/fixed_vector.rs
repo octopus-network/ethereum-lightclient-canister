@@ -1,6 +1,6 @@
 use crate::tree_hash::vec_tree_hash_root;
 use crate::Error;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::slice::SliceIndex;
@@ -45,8 +45,7 @@ pub use typenum;
 /// let long: FixedVector<_, typenum::U5> = FixedVector::from(base);
 /// assert_eq!(&long[..], &[1, 2, 3, 4, 0]);
 /// ```
-#[derive(Debug, Clone, CandidType, Serialize)]
-#[serde(transparent)]
+#[derive(Debug, Clone, CandidType)]
 pub struct FixedVector<T, N> {
     vec: Vec<T>,
     _phantom: PhantomData<N>,
@@ -114,7 +113,6 @@ impl<T, N: Unsigned> FixedVector<T, N> {
 impl<T: Default, N: Unsigned> From<Vec<T>> for FixedVector<T, N> {
     fn from(mut vec: Vec<T>) -> Self {
         vec.resize_with(Self::capacity(), Default::default);
-
         Self {
             vec,
             _phantom: PhantomData,
@@ -341,6 +339,14 @@ where
     }
 }
 
+impl<'de, T,N> Serialize for FixedVector<T, N> where
+    T: Deserialize<'de> + Serialize,
+    N: Unsigned,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        Vec::<T>::serialize(&self.vec, serializer)
+    }
+}
 impl<'de, T, N> Deserialize<'de> for FixedVector<T, N>
 where
     T: Deserialize<'de> + Serialize,

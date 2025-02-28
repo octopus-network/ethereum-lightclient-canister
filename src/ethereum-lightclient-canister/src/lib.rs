@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::time::Duration;
 use candid::CandidType;
 use ic_canisters_http_types::{HttpRequest, HttpResponse};
@@ -87,12 +88,16 @@ pub async fn query_block(block_hash: String) -> String {
     let rpc: IcExecutionRpc = IcExecutionRpc::new("https://mainnet.infura.io/v3/025779c23a2d44d1b1ecef2bfb4f2b29").unwrap();
     let b = B256::from_hex(block_hash.as_str());
     serde_json::to_string( &rpc.get_block(b).await.unwrap()).unwrap()
-
 }
 
 #[query]
 pub async fn get_finality(height: u64) -> Option<BlockInfo> {
     read_state(|s|s.blocks.get(&height))
+}
+
+#[query]
+pub async fn hashes() -> BTreeMap<B256, u64> {
+    read_state(|s|s.hashes.clone())
 }
 
 ic_cdk::export_candid!();

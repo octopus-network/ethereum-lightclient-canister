@@ -5,6 +5,12 @@ type Beacon = record {
   state_root : text;
   parent_root : text;
 };
+type BlockInfo = record {
+  block_hash : blob;
+  block_number : nat64;
+  receipt_root : blob;
+  parent_block_hash : blob;
+};
 type Config = record {
   load_external_fallback : bool;
   max_checkpoint_age : int64;
@@ -59,7 +65,8 @@ type Struct1 = record {
   execution : Execution;
 };
 service : (InitArgs) -> {
-  get_finality : () -> (text);
+  get_finality : (nat64) -> (opt BlockInfo) query;
+  hashes : () -> (vec record { blob; nat64 }) query;
   query_block : (text) -> (text);
   set_up : () -> ();
   state : () -> (StateProfileView) query;
