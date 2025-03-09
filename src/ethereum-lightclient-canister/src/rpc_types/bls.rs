@@ -1,9 +1,8 @@
-/*use ic_bls12_381::{
+use ic_bls12_381::{
     hash_to_curve::{ExpandMsgXmd, HashToCurve},
     multi_miller_loop, G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, Scalar,
-};*/
-use eyre::eyre;
-use eyre::Result;
+};
+use eyre::{eyre, Result};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use ssz_derive::{Decode, Encode};
 
@@ -47,7 +46,6 @@ impl Serialize for Signature {
     }
 }
 
-/*
 
 impl PublicKey {
     fn point(&self) -> eyre::Result<G1Affine> {
@@ -63,11 +61,6 @@ impl PublicKey {
 }
 
 impl Signature {
-    /// FastAggregateVerify
-    ///
-    /// Verifies an AggregateSignature against a list of PublicKeys.
-    /// PublicKeys must all be verified via Proof of Possession before running this function.
-    /// https://tools.ietf.org/html/draft-irtf-cfrg-bls-signature-02#section-3.3.4
     pub fn verify(&self, msg: &[u8], pks: &[PublicKey]) -> bool {
         let sig_point = if let Ok(point) = self.point() {
             point
@@ -179,7 +172,7 @@ fn hex_to_scalar(hex: &str) -> Option<Scalar> {
 
     Some(Scalar::from_raw(raw))
 }
-*/
+
 
 #[test]
 pub fn test() {

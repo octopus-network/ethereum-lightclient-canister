@@ -858,7 +858,6 @@ dependencies = [
  "eyre",
  "figment",
  "futures",
- "getrandom 0.2.15",
  "hex",
  "ic-canister-log",
  "ic-canisters-http-types",
@@ -869,9 +868,6 @@ dependencies = [
  "log",
  "num-bigint",
  "parking_lot",
- "rand",
- "rand_chacha",
- "rand_core",
  "retri",
  "ruint",
  "serde",
@@ -977,7 +973,6 @@ version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ded41244b729663b1e574f1b4fb731469f69f79c17667b5d776b16cda0479449"
 dependencies = [
- "bitvec",
  "rand_core",
  "subtle",
 ]
