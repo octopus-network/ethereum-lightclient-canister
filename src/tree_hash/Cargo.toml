@@ -25,5 +25,5 @@ derive_more = { version = "1", features = ["full"] }
 ruint = {version = "1.12.3", default-features = false, features = ["alloc"]}
 [dev-dependencies]
 rand = "0.8.5"
-tree_hash_derive = { path = "../tree_hash_derive", version = "0.9.0" }
+tree_hash_derive = { version = "0.9.0" }
 ethereum_ssz_derive = "0.8.0"
