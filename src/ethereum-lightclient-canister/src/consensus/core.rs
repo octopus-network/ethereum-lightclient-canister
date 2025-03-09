@@ -479,9 +479,7 @@ fn verify_sync_committee_signture(
 ) -> bool {
     let header_root = attested_header.tree_hash_root();
     let signing_root = compute_committee_sign_root(header_root, fork_data_root);
-    true
-    //TODO
-    //signature.verify(signing_root.as_slice(), pks)
+    signature.verify(signing_root.as_slice(), pks)
 }
 
 fn safety_threshold<S: ConsensusSpec>(store: &LightClientStore) -> u64 {
