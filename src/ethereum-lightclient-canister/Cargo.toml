@@ -1,0 +1,64 @@
+[package]
+name = "ethereum_lightclient_canister"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+eyre = { workspace = true }
+helios_common = { workspace = true }
+#helios_config = { workspace = true }
+ssz_types.workspace = true
+ciborium = "0.2.1"
+candid.workspace = true
+#getrandom = { version = "0.2.10", features = ["custom", "js"] }
+ic-cdk.workspace = true
+ic-cdk-timers = "=0.9.0"
+time = "0.3.36"
+ic-stable-structures = "0.6.5"
+ic-canister-log = { git = "https://github.com/dfinity/ic", tag = "release-2024-01-18_23-01" }
+ic-canisters-http-types = { git = "https://github.com/dfinity/ic", tag = "release-2024-03-06_23-01+p2p" }
+log = "0.4.19"
+num-bigint = "0.4.3"
+
+serde = "1.0.183"
+serde_json = "1.0.104"
+anyhow = "1.0.72"
+async-trait = "0.1.86"
+ethereum_ssz_derive.workspace = true
+ethereum_ssz.workspace = true
+ruint = {version = "1.12.3", default-features = false, features = ["alloc"]}
+# consensus
+tree_hash.workspace = true
+
+# config
+figment = { version = "0.10.7", features = ["toml", "env"] }
+serde_yaml = "0.9.14"
+strum = { version = "0.26.2", features = ["derive"] }
+url = {version = "2.5.0", features = ["serde"] }
+
+# async/futures
+tokio.workspace = true
+futures.workspace = true
+ic_bls12_381.workspace = true
+sha3 = "0.10.8"
+tree_hash_derive.workspace = true
+# io
+hex.workspace = true
+thiserror.workspace = true
+superstruct.workspace = true
+retri.workspace = true
+typenum.workspace = true
+sha2.workspace = true
+serde_derive = "1.0.218"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4.37"
+
+
+[target.wasm32-unknown-unknown.dependencies]
+parking_lot = { version = "0.12.2" }

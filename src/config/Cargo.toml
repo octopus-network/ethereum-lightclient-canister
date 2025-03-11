@@ -1,0 +1,19 @@
+[package]
+name = "config"
+version = "0.4.1"
+edition = "2021"
+
+[dependencies]
+eyre = "0.6.8"
+serde = { version = "1.0.143", features = ["derive"] }
+hex = "0.4.3"
+ssz-rs = { git = "https://github.com/ralexstokes/ssz-rs", rev = "d09f55b4f8554491e3431e01af1c32347a8781cd" }
+figment = { version = "0.10.7", features = ["toml", "env"] }
+thiserror = "1.0.37"
+log = "0.4.17"
+serde_yaml = "0.9.14"
+serde_json = "1.0.103"
+strum = { version = "0.24.1", features = ["derive"] }
+futures = "0.3.23"
+
+common = { path = "../common" }
