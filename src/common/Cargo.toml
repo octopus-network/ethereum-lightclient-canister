@@ -20,3 +20,7 @@ tree_hash_derive.workspace = true
 ic-cdk.workspace = true
 candid.workspace = true
 getrandom = { version = "0.2.8", features = ["js"] }
+ic_bls12_381.workspace = true
+sha2.workspace = true
+ethereum_ssz_derive.workspace = true
+ethereum_ssz.workspace = true

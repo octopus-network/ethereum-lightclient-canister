@@ -2,10 +2,10 @@ use sha2::{Digest, Sha256};
 use tree_hash::fixed_bytes::B256;
 use tree_hash::TreeHash;
 use crate::config::Forks;
-use crate::consensus::consensus_spec::ConsensusSpec;
-use crate::rpc_types::bootstrap::SyncCommittee;
+use helios_common::consensus_spec::ConsensusSpec;
+use helios_common::rpc_types::bootstrap::SyncCommittee;
 
-use crate::rpc_types::lightclient_header::{BeaconBlockHeader, ExecutionPayloadHeader};
+use helios_common::rpc_types::lightclient_header::{BeaconBlockHeader, ExecutionPayloadHeader};
 
 pub fn is_finality_proof_valid(
     attested_header: &BeaconBlockHeader,

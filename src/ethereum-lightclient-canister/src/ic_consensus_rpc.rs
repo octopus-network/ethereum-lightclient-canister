@@ -5,9 +5,9 @@ use helios_common::http::get;
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::B256;
-use crate::rpc_types::bootstrap::{Bootstrap, BootstrapResponse};
-use crate::rpc_types::finality_update::{FinalityUpdate, FinalityUpdateResponse};
-use crate::rpc_types::update::{Update, UpdateData};
+use helios_common::rpc_types::bootstrap::{Bootstrap, BootstrapResponse};
+use helios_common::rpc_types::finality_update::{FinalityUpdate, FinalityUpdateResponse};
+use helios_common::rpc_types::update::{Update, UpdateData};
 use crate::state::read_state;
 
 pub const MAX_REQUEST_LIGHT_CLIENT_UPDATES: u8 = 128;

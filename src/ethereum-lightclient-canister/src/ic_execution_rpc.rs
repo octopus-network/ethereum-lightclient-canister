@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use helios_common::errors::RpcError;
 use helios_common::http::post;
 use tree_hash::fixed_bytes::B256;
-use crate::rpc_types::block::ExecutionBlock;
+use helios_common::rpc_types::block::ExecutionBlock;
 
 
 #[derive(Debug,Clone)]

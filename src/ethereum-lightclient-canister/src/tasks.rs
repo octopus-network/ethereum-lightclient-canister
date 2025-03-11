@@ -1,6 +1,6 @@
 use ic_canister_log::log;
 use crate::consensus::consensus::Inner;
-use crate::consensus::consensus_spec::MainnetConsensusSpec;
+use helios_common::consensus_spec::MainnetConsensusSpec;
 use crate::ic_log::WARNING;
 use crate::state::{mutate_state, read_state};
 

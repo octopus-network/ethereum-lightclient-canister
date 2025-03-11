@@ -1,6 +1,6 @@
 use ic_cdk::{export_candid, query, update};
-//use tree_hash::fixed_bytes::B256;
-//use crate::ic_execution_rpc::IcExecutionRpc;
+use tree_hash::fixed_bytes::B256;
+use crate::ic_execution_rpc::IcExecutionRpc;
 
 #[query]
 pub fn set_resup() -> String {

@@ -6,9 +6,9 @@ use tree_hash_derive::TreeHash;
 
 
 use crate::config::Forks;
-use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
-use crate::rpc_types::bls::PublicKey;
-use crate::rpc_types::bootstrap::SyncCommittee;
+use helios_common::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
+use helios_common::rpc_types::bls::PublicKey;
+use helios_common::rpc_types::bootstrap::SyncCommittee;
 
 pub fn compute_committee_sign_root(header: B256, fork_data_root: B256) -> B256 {
     let domain_type = [7, 00, 00, 00];

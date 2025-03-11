@@ -1,1 +1,2 @@
 mod receipt;
+mod log;

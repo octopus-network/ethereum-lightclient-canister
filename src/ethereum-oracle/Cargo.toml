@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 eyre = { workspace = true }
-#helios_common = { workspace = true }
+helios_common = { workspace = true }
 ciborium = "0.2.1"
 candid.workspace = true
 #getrandom = { version = "0.2.10", features = ["custom", "js"] }
@@ -21,12 +21,13 @@ ic-canister-log = { git = "https://github.com/dfinity/ic", tag = "release-2024-0
 
 ethers-core = { version = "=2.0.8",default-features = false}
 getrandom = { version = "0.2.10", features = ["custom", "js"] }
-#serde = "1.0.183"
-#serde_json = "1.0.104"
-#anyhow = "1.0.72"
-#num-traits = { version = "0.2", default-features = false }
-#bytes = { version = "^1.4.0", default-features = false }
-#tree_hash.workspace = true
-#hex.workspace = true
-#thiserror.workspace = true
-#serde_derive = "1.0.218"
+serde = "1.0.183"
+serde_json = "1.0.104"
+anyhow = "1.0.72"
+num-traits = { version = "0.2", default-features = false }
+bytes = { version = "^1.4.0", default-features = false }
+tree_hash.workspace = true
+hex.workspace = true
+thiserror.workspace = true
+serde_derive = "1.0.218"
+#cketh-common = { git = "https://github.com/dfinity/ic", package = "ic-cketh-minter" }

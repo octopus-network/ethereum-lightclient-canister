@@ -7,14 +7,14 @@ use serde::{Deserialize, Serialize};
 
 use tree_hash::fixed_bytes::B256;
 
-use crate::consensus::consensus_spec::{calc_sync_period, ConsensusSpec, MainnetConsensusSpec};
+use helios_common::consensus_spec::{calc_sync_period, ConsensusSpec, MainnetConsensusSpec};
 use crate::consensus::core::{apply_bootstrap, apply_finality_update, apply_update, expected_current_slot, get_bits, verify_bootstrap, verify_finality_update, verify_update};
 use crate::consensus::errors::ConsensusError;
 use crate::ic_consensus_rpc::{IcpConsensusRpc, MAX_REQUEST_LIGHT_CLIENT_UPDATES};
 use crate::ic_log::{INFO, WARNING};
-use crate::rpc_types::finality_update::FinalityUpdate;
-use crate::rpc_types::lightclient_store::LightClientStore;
-use crate::rpc_types::update::Update;
+use helios_common::rpc_types::finality_update::FinalityUpdate;
+use helios_common::rpc_types::lightclient_store::LightClientStore;
+use helios_common::rpc_types::update::Update;
 use crate::state::{read_state, StateModifier};
 use crate::storable_structures::BlockInfo;
 

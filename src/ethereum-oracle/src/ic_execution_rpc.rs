@@ -1,5 +1,5 @@
-use ethers_core::types::TransactionReceipt;
-/*use serde::{Deserialize, Serialize};
+
+use serde::{Deserialize, Serialize};
 
 use helios_common::errors::RpcError;
 use helios_common::http::post;
@@ -61,4 +61,4 @@ pub struct EvmJsonRpcRequest {
 #[derive(Deserialize, Clone, Debug, Default)]
 pub struct EvmRpcResponse<T> {
     pub result: Option<T>,
-}*/
+}

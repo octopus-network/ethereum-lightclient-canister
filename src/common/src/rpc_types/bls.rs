@@ -6,7 +6,7 @@ use eyre::{eyre, Result};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use ssz_derive::{Decode, Encode};
 
-use helios_common::bytes::ByteVector;
+use crate::bytes::ByteVector;
 use tree_hash_derive::TreeHash;
 
 #[derive(Debug, Clone, Default, TreeHash, PartialEq)]

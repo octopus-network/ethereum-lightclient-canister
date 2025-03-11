@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 use ssz::BitVector;
 
-use helios_common::bytes::{ByteList, LogsBloom};
+use crate::bytes::{ByteList, LogsBloom};
 use ssz_types::FixedVector;
 use tree_hash::fixed_bytes::B256;
 use tree_hash::U256;
 use tree_hash_derive::TreeHash;
 
-use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
+use crate::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::rpc_types::address::Address;
 use crate::rpc_types::bls::Signature;
 

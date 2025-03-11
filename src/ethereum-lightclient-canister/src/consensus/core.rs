@@ -8,18 +8,18 @@ use tree_hash::TreeHash;
 use crate::config::Forks;
 use crate::consensus::errors::ConsensusError;
 
-use crate::consensus::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
+use helios_common::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::consensus::proof::{
     is_current_committee_proof_valid, is_execution_payload_proof_valid, is_finality_proof_valid,
     is_next_committee_proof_valid,
 };
-use crate::rpc_types::bootstrap::Bootstrap;
-use crate::rpc_types::finality_update::FinalityUpdate;
-use crate::rpc_types::lightclient_header::{BeaconBlockHeader, LightClientHeader};
-use crate::rpc_types::lightclient_store::{GenericUpdate, LightClientStore};
-use crate::rpc_types::optimistic_update::OptimisticUpdate;
-use crate::rpc_types::update::Update;
-use crate::rpc_types::bls::{PublicKey, Signature};
+use helios_common::rpc_types::bootstrap::Bootstrap;
+use helios_common::rpc_types::finality_update::FinalityUpdate;
+use helios_common::rpc_types::lightclient_header::{BeaconBlockHeader, LightClientHeader};
+use helios_common::rpc_types::lightclient_store::{GenericUpdate, LightClientStore};
+use helios_common::rpc_types::optimistic_update::OptimisticUpdate;
+use helios_common::rpc_types::update::Update;
+use helios_common::rpc_types::bls::{PublicKey, Signature};
 
 use crate::consensus::utils::{
     calculate_fork_version, compute_committee_sign_root, compute_fork_data_root,
