@@ -1,18 +1,17 @@
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
-use ssz_derive::{Decode, Encode};
 use ssz_types::{
     serde_utils::{hex_fixed_vec, hex_var_list},
     FixedVector, VariableList,
 };
 use tree_hash_derive::TreeHash;
 
-#[derive(Debug, Clone, CandidType, Default, Encode, Decode, TreeHash, PartialEq)]
+#[derive(Debug, Clone, CandidType, Default,TreeHash, PartialEq)]
 pub struct ByteVector<N: typenum::Unsigned> {
     pub inner: FixedVector<u8, N>,
 }
 
-#[derive(Debug, Clone, Default, CandidType, Encode, Decode, TreeHash, PartialEq)]
+#[derive(Debug, Clone, Default, CandidType,TreeHash, PartialEq)]
 pub struct ByteList<N: typenum::Unsigned> {
     pub inner: VariableList<u8, N>,
 }

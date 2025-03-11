@@ -9,7 +9,7 @@ use ssz_derive::{Decode, Encode};
 use helios_common::bytes::ByteVector;
 use tree_hash_derive::TreeHash;
 
-#[derive(Debug, Clone, Default, Encode, Decode, TreeHash, PartialEq)]
+#[derive(Debug, Clone, Default, TreeHash, PartialEq)]
 pub struct PublicKey {
     pub inner: ByteVector<typenum::U48>,
 }
@@ -28,7 +28,7 @@ impl Serialize for PublicKey {
 }
 
 
-#[derive(Debug, Clone, Default, Encode, Decode, TreeHash)]
+#[derive(Debug, Clone, Default, TreeHash)]
 pub struct Signature {
     pub inner: ByteVector<typenum::U96>,
 }

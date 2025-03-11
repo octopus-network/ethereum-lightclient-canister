@@ -11,6 +11,18 @@
           "name": "candid:service"
         }
       ]
+    },
+    "ethereum_oracle": {
+      "candid": "src/ethereum-oracle/candid.did",
+      "package": "ethereum_oralce",
+      "type": "custom",
+      "wasm": "target/wasm32-unknown-unknown/release/ethereum_oracle.wasm",
+      "gzip": true,
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
     }
   },
   "defaults": {
