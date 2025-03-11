@@ -1,5 +1,5 @@
 use ethers_core::types::TransactionReceipt;
-use serde::{Deserialize, Serialize};
+/*use serde::{Deserialize, Serialize};
 
 use helios_common::errors::RpcError;
 use helios_common::http::post;
@@ -20,12 +20,12 @@ impl IcExecutionRpc {
         )
     }
 
-    pub(crate) async fn get_block_receipts(&self, block_hash: B256) -> eyre::Result<Vec<TransactionReceipt>> {
+ /*   pub(crate) async fn get_block_receipts(&self, block_hash: B256) -> eyre::Result<Vec<TransactionReceipt>> {
         let real_hex = format!("0x{}", hex::encode(block_hash.0.as_slice()));
         let params = r#"{"id":1, "json_rpc":"2.0", "method": "eth_getBlockReceipts", "params":["block_hash"]}"#;
         let params = params.replace("block_hash", &real_hex);
         post_request("eth_getBlockReceipts", params, self.rpc.clone()).await
-    }
+    }*/
 
 }
 
@@ -61,4 +61,4 @@ pub struct EvmJsonRpcRequest {
 #[derive(Deserialize, Clone, Debug, Default)]
 pub struct EvmRpcResponse<T> {
     pub result: Option<T>,
-}
+}*/
