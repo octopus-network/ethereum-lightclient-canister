@@ -1,1 +1,4 @@
-service : { set_resup : () -> (text) query }
+service : {
+  query_block_receipts : (text) -> (text);
+  set_resup : () -> (text) query;
+}

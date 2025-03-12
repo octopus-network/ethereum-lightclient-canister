@@ -17,7 +17,6 @@ use helios_common::rpc_types::bootstrap::Bootstrap;
 use helios_common::rpc_types::finality_update::FinalityUpdate;
 use helios_common::rpc_types::lightclient_header::{BeaconBlockHeader, LightClientHeader};
 use helios_common::rpc_types::lightclient_store::{GenericUpdate, LightClientStore};
-use helios_common::rpc_types::optimistic_update::OptimisticUpdate;
 use helios_common::rpc_types::update::Update;
 use helios_common::rpc_types::bls::{PublicKey, Signature};
 
@@ -80,16 +79,6 @@ pub fn verify_finality_update<S: ConsensusSpec>(
     verify_generic_update::<S>(&update, expected_current_slot, store, genesis_root, forks)
 }
 
-pub fn verify_optimistic_update<S: ConsensusSpec>(
-    update: &OptimisticUpdate,
-    expected_current_slot: u64,
-    store: &LightClientStore,
-    genesis_root: B256,
-    forks: &Forks,
-) -> Result<()> {
-    let update = GenericUpdate::from(update);
-    verify_generic_update::<S>(&update, expected_current_slot, store, genesis_root, forks)
-}
 
 pub fn apply_bootstrap<S: ConsensusSpec>(
     store: &mut LightClientStore,
@@ -122,13 +111,6 @@ pub fn apply_finality_update<S: ConsensusSpec>(
     apply_generic_update::<S>(store, &update)
 }
 
-pub fn apply_optimistic_update<S: ConsensusSpec>(
-    store: &mut LightClientStore,
-    update: &OptimisticUpdate,
-) -> Option<B256> {
-    let update = GenericUpdate::from(update);
-    apply_generic_update::<S>(store, &update)
-}
 
 pub fn apply_generic_update<S: ConsensusSpec>(
     store: &mut LightClientStore,
@@ -352,27 +334,6 @@ pub fn verify_generic_update<S: ConsensusSpec>(
     Ok(())
 }
 
-/// WARNING: `force_update` allows Helios to accept a header with less than a quorum of signatures.
-/// Use with caution only in cases where it is not possible that valid updates are being censored.
-pub fn force_update<S: ConsensusSpec>(store: &mut LightClientStore, current_slot: u64) {
-    if current_slot > store.finalized_header.beacon.slot + S::slots_per_sync_commitee_period() {
-        if let Some(mut best_valid_update) = store.best_valid_update.clone() {
-            if best_valid_update
-                .finalized_header
-                .as_ref()
-                .unwrap()
-                .beacon
-                .slot
-                <= store.finalized_header.beacon.slot
-            {
-                best_valid_update.finalized_header =
-                    Some(best_valid_update.attested_header.clone());
-            }
-            apply_update_no_quorum_check::<S>(store, &best_valid_update);
-            store.best_valid_update = None;
-        }
-    }
-}
 
 pub fn expected_current_slot(time_now:u64, genesis_time: u64) -> u64 {
 

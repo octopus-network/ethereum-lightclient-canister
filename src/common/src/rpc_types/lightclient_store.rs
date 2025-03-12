@@ -1,6 +1,7 @@
-use candid::CandidType;
 use serde::{Deserialize, Serialize};
+
 use tree_hash::fixed_bytes::B256;
+
 use crate::rpc_types::bootstrap::SyncCommittee;
 use crate::rpc_types::convert::{default_branch_to_none, default_header_to_none, default_to_none};
 use crate::rpc_types::finality_update::FinalityUpdate;
@@ -65,7 +66,7 @@ impl From<&FinalityUpdate> for GenericUpdate {
         Self {
             attested_header: update.attested_header.clone(),
             sync_aggregate: update.sync_aggregate.clone(),
-            signature_slot: update.signature_slot.clone(),
+            signature_slot: update.signature_slot,
             next_sync_committee: None,
             next_sync_committee_branch: None,
             finalized_header: default_header_to_none(update.finalized_header.clone()),

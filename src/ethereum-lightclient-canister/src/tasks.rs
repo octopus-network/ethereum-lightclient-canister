@@ -6,7 +6,7 @@ use crate::state::{mutate_state, read_state};
 
 pub fn lightclient_task() {
     ic_cdk::spawn(async {
-        let _guard = match crate::guard::TimerLogicGuard::new("SCAN_EVM_TASK_NAME".to_string()) {
+        let _guard = match crate::guard::TimerLogicGuard::new() {
             Some(guard) => guard,
             None => return,
         };

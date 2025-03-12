@@ -6,7 +6,7 @@ use ssz_types::{
 };
 use tree_hash_derive::TreeHash;
 
-#[derive(Debug, Clone, CandidType, Default,TreeHash, PartialEq)]
+#[derive(Debug, Clone, CandidType, Default, TreeHash, PartialEq, Eq)]
 pub struct ByteVector<N: typenum::Unsigned> {
     pub inner: FixedVector<u8, N>,
 }

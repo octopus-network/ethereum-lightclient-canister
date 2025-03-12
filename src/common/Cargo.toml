@@ -11,6 +11,7 @@ hex = "0.4.3"
 ssz-rs = { git = "https://github.com/ralexstokes/ssz-rs", rev = "d09f55b4f8554491e3431e01af1c32347a8781cd" }
 thiserror = "1.0.37"
 typenum = "1.18.0"
+rlp = "0.6.1"
 
 ssz_types.workspace = true
 tree_hash.workspace = true

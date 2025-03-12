@@ -1,8 +1,10 @@
-use crate::stable_memory;
-use candid::{CandidType, Principal};
+use std::cell::RefCell;
+
+use candid::Principal;
 use ic_stable_structures::writer::Writer;
 use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
+
+use crate::stable_memory;
 
 thread_local! {
     static STATE: RefCell<Option<OracleState>> = const { RefCell::new(None) };

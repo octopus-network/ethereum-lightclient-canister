@@ -4,6 +4,7 @@ use candid_derive::CandidType;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
 use derive_more::Index;
+use rlp::{Encodable, RlpStream};
 
 #[derive(Debug, Copy, Index, Clone, CandidType,Ord, Eq, PartialEq, PartialOrd)]
 pub struct FixedBytes<const N: usize>( pub [u8; N]);
@@ -15,14 +16,20 @@ impl<const N: usize> Default for FixedBytes<N> {
 }
 
 pub type B256 = FixedBytes<32>;
+pub type LogBloom = FixedBytes<256>;
 
+impl<const N: usize> Encodable for FixedBytes<N> {
+    fn rlp_append(&self, s: &mut RlpStream) {
+        s.encoder().encode_value(self.0.as_slice());
+    }
+}
 
 impl<'de, const N: usize> Deserialize<'de> for FixedBytes<N> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
         let val: String = serde::Deserialize::deserialize(deserializer)?;
         let h = hex::decode(val.trim_start_matches("0x")).map_err(D::Error::custom)?;
         if h.len() != N {
-            return Err("length error".to_string()).map_err(D::Error::custom);
+            return Err(D::Error::custom("length error".to_string()));
         }
         let mut v: [u8;N] = [0u8;N];
         v.copy_from_slice(h.as_slice());

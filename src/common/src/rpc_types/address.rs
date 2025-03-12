@@ -1,10 +1,17 @@
+use candid::CandidType;
+use rlp::{Encodable, RlpStream};
 use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::FixedBytes;
 use tree_hash::{Hash256, PackedEncoding, TreeHash, TreeHashType};
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, CandidType, Serialize, Deserialize, Eq)]
 pub struct Address(pub FixedBytes<20>);
 
+impl Encodable for Address {
+    fn rlp_append(&self, s: &mut RlpStream) {
+        s.encoder().encode_value(self.0.as_slice());
+    }
+}
 
 impl TreeHash for Address {
     fn tree_hash_type() -> TreeHashType {

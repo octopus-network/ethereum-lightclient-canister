@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde_derive::Serialize;
 
 #[derive(Serialize,  CandidType, Deserialize)]
-struct FinalizedBlock {
+pub struct FinalizedBlock {
     pub receipt_root: String,
     pub parent_block_hash: String,
     pub block_number: i64,
@@ -12,13 +12,13 @@ struct FinalizedBlock {
 
 
 #[derive(Serialize,  CandidType, Deserialize)]
-struct AggregatePubkey {
+pub struct AggregatePubkey {
     pub inner: String,
 }
 
 
 #[derive(Serialize,  CandidType, Deserialize)]
-struct Execution {
+pub struct Execution {
     pub parent_hash: String,
     pub fee_recipient: String,
     pub state_root: String,
@@ -39,7 +39,7 @@ struct Execution {
 }
 
 #[derive(Serialize,  CandidType, Deserialize)]
-struct Beacon {
+pub struct Beacon {
     pub slot: String,
     pub proposer_index: String,
     pub parent_root: String,
@@ -48,14 +48,14 @@ struct Beacon {
 }
 
 #[derive(Serialize,  CandidType, Deserialize)]
-struct Struct1 {
+pub struct Struct1 {
     pub beacon: Beacon,
     pub execution: Execution,
     pub execution_branch: Vec<String>,
 }
 
 #[derive(Serialize,  CandidType, Deserialize)]
-struct Store {
+pub struct Store {
     pub finalized_header: Struct1,
     pub optimistic_header: Struct1,
     pub previous_max_active_participants: i64,
@@ -91,7 +91,7 @@ struct Chain {
 }
 
 #[derive(Serialize,  CandidType, Deserialize)]
-struct Config {
+pub struct Config {
     pub consensus_rpc: String,
     pub execution_rpc: String,
     pub default_checkpoint: String,

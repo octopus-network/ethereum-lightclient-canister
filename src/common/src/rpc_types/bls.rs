@@ -1,13 +1,12 @@
-use ic_bls12_381::{
-    hash_to_curve::{ExpandMsgXmd, HashToCurve},
-    multi_miller_loop, G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, Scalar,
-};
 use eyre::{eyre, Result};
+use ic_bls12_381::{
+    G1Affine,
+    G1Projective, G2Affine, G2Prepared, G2Projective, Gt, hash_to_curve::{ExpandMsgXmd, HashToCurve}, multi_miller_loop, Scalar,
+};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use ssz_derive::{Decode, Encode};
+use tree_hash_derive::TreeHash;
 
 use crate::bytes::ByteVector;
-use tree_hash_derive::TreeHash;
 
 #[derive(Debug, Clone, Default, TreeHash, PartialEq)]
 pub struct PublicKey {

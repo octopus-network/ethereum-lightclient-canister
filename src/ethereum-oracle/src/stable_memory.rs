@@ -10,7 +10,7 @@ thread_local! {
     static MEMORY: RefCell<Option<InnerMemory>> = RefCell::new(Some(InnerMemory::default()));
 
     static MEMORY_MANAGER: RefCell<Option<MemoryManager<InnerMemory>>> =
-        RefCell::new(Some(MemoryManager::init(MEMORY.with(|m| m.borrow().clone().unwrap()))));
+        RefCell::new(Some(MemoryManager::init(MEMORY.with(|m| (*m.borrow()).unwrap()))));
 }
 
 fn with_memory_manager<R>(f: impl FnOnce(&MemoryManager<InnerMemory>) -> R) -> R {
