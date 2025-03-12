@@ -9,7 +9,7 @@ use crate::rpc_types::lightclient_header::{LightClientHeader, SyncAggregate};
 use crate::rpc_types::optimistic_update::OptimisticUpdate;
 use crate::rpc_types::update::Update;
 
-#[derive(Debug, Default, Clone,Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct LightClientStore {
     pub finalized_header: LightClientHeader,
     pub current_sync_committee: SyncCommittee,
@@ -19,8 +19,6 @@ pub struct LightClientStore {
     pub current_max_active_participants: u64,
     pub best_valid_update: Option<GenericUpdate>,
 }
-
-
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct GenericUpdate {

@@ -1,7 +1,6 @@
 use candid::Nat;
 use ethers_core::abi::AbiEncode;
 
-
 use crate::test_canister::{call, setup_ethereum_canister};
 
 mod test_canister;

@@ -1,9 +1,9 @@
-use sha2::{Digest, Sha256};
-use tree_hash::fixed_bytes::B256;
-use tree_hash::TreeHash;
 use crate::config::Forks;
 use helios_common::consensus_spec::ConsensusSpec;
 use helios_common::rpc_types::bootstrap::SyncCommittee;
+use sha2::{Digest, Sha256};
+use tree_hash::fixed_bytes::B256;
+use tree_hash::TreeHash;
 
 use helios_common::rpc_types::lightclient_header::{BeaconBlockHeader, ExecutionPayloadHeader};
 
@@ -78,7 +78,13 @@ pub fn is_execution_payload_proof_valid(
     execution: &ExecutionPayloadHeader,
     execution_branch: &[B256],
 ) -> bool {
-    is_proof_valid(attested_header.body_root.clone(), execution, execution_branch, 4, 9)
+    is_proof_valid(
+        attested_header.body_root.clone(),
+        execution,
+        execution_branch,
+        4,
+        9,
+    )
 }
 
 fn is_proof_valid<T: TreeHash>(

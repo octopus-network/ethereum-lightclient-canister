@@ -1,24 +1,24 @@
 use std::cmp;
 
+use crate::config::Forks;
+use crate::consensus::errors::ConsensusError;
 use eyre::Result;
 use ic_canister_log::log;
 use ssz_types::BitVector;
 use tree_hash::fixed_bytes::B256;
 use tree_hash::TreeHash;
-use crate::config::Forks;
-use crate::consensus::errors::ConsensusError;
 
-use helios_common::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::consensus::proof::{
     is_current_committee_proof_valid, is_execution_payload_proof_valid, is_finality_proof_valid,
     is_next_committee_proof_valid,
 };
+use helios_common::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
+use helios_common::rpc_types::bls::{PublicKey, Signature};
 use helios_common::rpc_types::bootstrap::Bootstrap;
 use helios_common::rpc_types::finality_update::FinalityUpdate;
 use helios_common::rpc_types::lightclient_header::{BeaconBlockHeader, LightClientHeader};
 use helios_common::rpc_types::lightclient_store::{GenericUpdate, LightClientStore};
 use helios_common::rpc_types::update::Update;
-use helios_common::rpc_types::bls::{PublicKey, Signature};
 
 use crate::consensus::utils::{
     calculate_fork_version, compute_committee_sign_root, compute_fork_data_root,
@@ -47,7 +47,11 @@ pub fn verify_bootstrap<S: ConsensusSpec>(
     let header_valid = header_hash == checkpoint;
 
     if !header_valid {
-        return Err(ConsensusError::InvalidHeaderHash(hex::encode(checkpoint.0.as_slice()), hex::encode(header_hash.0.as_slice())).into());
+        return Err(ConsensusError::InvalidHeaderHash(
+            hex::encode(checkpoint.0.as_slice()),
+            hex::encode(header_hash.0.as_slice()),
+        )
+        .into());
     }
 
     if !committee_valid {
@@ -79,11 +83,7 @@ pub fn verify_finality_update<S: ConsensusSpec>(
     verify_generic_update::<S>(&update, expected_current_slot, store, genesis_root, forks)
 }
 
-
-pub fn apply_bootstrap<S: ConsensusSpec>(
-    store: &mut LightClientStore,
-    bootstrap: &Bootstrap,
-) {
+pub fn apply_bootstrap<S: ConsensusSpec>(store: &mut LightClientStore, bootstrap: &Bootstrap) {
     *store = LightClientStore {
         finalized_header: bootstrap.header.clone(),
         current_sync_committee: bootstrap.current_sync_committee.clone(),
@@ -110,7 +110,6 @@ pub fn apply_finality_update<S: ConsensusSpec>(
     let update = GenericUpdate::from(update);
     apply_generic_update::<S>(store, &update)
 }
-
 
 pub fn apply_generic_update<S: ConsensusSpec>(
     store: &mut LightClientStore,
@@ -316,7 +315,8 @@ pub fn verify_generic_update<S: ConsensusSpec>(
         store.next_sync_committee.as_ref().unwrap()
     };
 
-    let pks = get_participating_keys::<S>(sync_committee, &update.sync_aggregate.sync_committee_bits)?;
+    let pks =
+        get_participating_keys::<S>(sync_committee, &update.sync_aggregate.sync_committee_bits)?;
 
     let fork_version = calculate_fork_version::<S>(forks, update.signature_slot.saturating_sub(1));
     let fork_data_root = compute_fork_data_root(fork_version, genesis_root);
@@ -334,10 +334,8 @@ pub fn verify_generic_update<S: ConsensusSpec>(
     Ok(())
 }
 
-
-pub fn expected_current_slot(time_now:u64, genesis_time: u64) -> u64 {
-
-    let since_genesis = time_now/1000000000 - genesis_time;
+pub fn expected_current_slot(time_now: u64, genesis_time: u64) -> u64 {
+    let since_genesis = time_now / 1000000000 - genesis_time;
 
     since_genesis / 12
 }
@@ -347,7 +345,9 @@ pub fn calc_sync_period<S: ConsensusSpec>(slot: u64) -> u64 {
     epoch / S::epochs_per_sync_commitee_period()
 }
 
-pub fn get_bits<S: ConsensusSpec>(bitfield: &BitVector<<MainnetConsensusSpec as ConsensusSpec>::SyncCommitteeSize>) -> u64 {
+pub fn get_bits<S: ConsensusSpec>(
+    bitfield: &BitVector<<MainnetConsensusSpec as ConsensusSpec>::SyncCommitteeSize>,
+) -> u64 {
     bitfield.iter().filter(|v| *v).count() as u64
 }
 
@@ -372,10 +372,10 @@ fn is_better_update<S: ConsensusSpec>(
     // compare presence of relevant sync committee
     let new_has_relevant_sync_committee = new_update.next_sync_committee_branch.is_some()
         && calc_sync_period::<S>(new_update.attested_header.beacon.slot)
-        == calc_sync_period::<S>(new_update.signature_slot);
+            == calc_sync_period::<S>(new_update.signature_slot);
     let old_has_relevant_sync_committee = old_update.next_sync_committee_branch.is_some()
         && calc_sync_period::<S>(old_update.attested_header.beacon.slot)
-        == calc_sync_period::<S>(old_update.signature_slot);
+            == calc_sync_period::<S>(old_update.signature_slot);
     if new_has_relevant_sync_committee != old_has_relevant_sync_committee {
         return new_has_relevant_sync_committee;
     }

@@ -2,22 +2,22 @@ use serde::{Deserialize, Serialize};
 
 use helios_common::errors::RpcError;
 use helios_common::http::post;
-use tree_hash::fixed_bytes::B256;
 use helios_common::rpc_types::block::ExecutionBlock;
+use tree_hash::fixed_bytes::B256;
 
-
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct IcExecutionRpc {
     rpc: String,
 }
 
 impl IcExecutionRpc {
-    pub(crate) fn new(rpcx: &str) -> eyre::Result<Self> where Self: Sized {
-        Ok(
-            Self {
-                rpc: rpcx.to_string(),
-            }
-        )
+    pub(crate) fn new(rpcx: &str) -> eyre::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Self {
+            rpc: rpcx.to_string(),
+        })
     }
 
     pub(crate) async fn get_block(&self, hash: B256) -> eyre::Result<ExecutionBlock> {
@@ -26,29 +26,33 @@ impl IcExecutionRpc {
         let params = params.replace("block_hash", &real_hex);
         post_request("eth_getBlockByHash", params, self.rpc.clone()).await
     }
-
 }
 
-async fn post_request<T>(name: impl AsRef<str>, body: String, url: impl AsRef<str>) -> eyre::Result<T>
-    where
-        T: serde::de::DeserializeOwned,
+async fn post_request<T>(
+    name: impl AsRef<str>,
+    body: String,
+    url: impl AsRef<str>,
+) -> eyre::Result<T>
+where
+    T: serde::de::DeserializeOwned,
 {
     let name = name.as_ref();
     let url = url.as_ref();
-    let resp =post(url, &[], body.as_bytes().to_vec()).await.map_err(|e| RpcError::new(name, e))?;
+    let resp = post(url, &[], body.as_bytes().to_vec())
+        .await
+        .map_err(|e| RpcError::new(name, e))?;
     if resp.status != 200 {
         let e = format!("http response with status {}", resp.status);
         Err(RpcError::new(name, e))?;
     }
-    let value: EvmRpcResponse<T> = serde_json::from_slice(&resp.body).map_err(|e| RpcError::new(name, e))?;
+    let value: EvmRpcResponse<T> =
+        serde_json::from_slice(&resp.body).map_err(|e| RpcError::new(name, e))?;
     if value.result.is_some() {
         Ok(value.result.unwrap())
-    }else {
+    } else {
         Err(RpcError::new(name, "result is null".to_string()))?
     }
 }
-
-
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct EvmJsonRpcRequest {

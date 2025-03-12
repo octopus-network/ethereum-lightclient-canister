@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::rpc_types::lightclient_header::{LightClientHeader, SyncAggregate};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OptimisticUpdate {

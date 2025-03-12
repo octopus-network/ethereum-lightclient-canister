@@ -1,13 +1,13 @@
-use std::convert::TryFrom;
-use std::panic;
 use candid_derive::CandidType;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::Error;
 use derive_more::Index;
 use rlp::{Encodable, RlpStream};
+use serde::de::Error;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::convert::TryFrom;
+use std::panic;
 
-#[derive(Debug, Copy, Index, Clone, CandidType,Ord, Eq, PartialEq, PartialOrd)]
-pub struct FixedBytes<const N: usize>( pub [u8; N]);
+#[derive(Debug, Copy, Index, Clone, CandidType, Ord, Eq, PartialEq, PartialOrd)]
+pub struct FixedBytes<const N: usize>(pub [u8; N]);
 
 impl<const N: usize> Default for FixedBytes<N> {
     fn default() -> Self {
@@ -25,30 +25,35 @@ impl<const N: usize> Encodable for FixedBytes<N> {
 }
 
 impl<'de, const N: usize> Deserialize<'de> for FixedBytes<N> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let val: String = serde::Deserialize::deserialize(deserializer)?;
         let h = hex::decode(val.trim_start_matches("0x")).map_err(D::Error::custom)?;
         if h.len() != N {
             return Err(D::Error::custom("length error".to_string()));
         }
-        let mut v: [u8;N] = [0u8;N];
+        let mut v: [u8; N] = [0u8; N];
         v.copy_from_slice(h.as_slice());
         Ok(FixedBytes(v))
     }
 }
 
-
 impl<const N: usize> Serialize for FixedBytes<N> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         let x = format!("0x{}", hex::encode(self.0.as_slice()));
         serializer.serialize_str(&x)
     }
 }
 
 impl<const N: usize> FixedBytes<N> {
-    pub const ZERO: Self = Self([0u8;N]);
+    pub const ZERO: Self = Self([0u8; N]);
 
-    pub fn new(src: [u8;N]) -> Self{
+    pub fn new(src: [u8; N]) -> Self {
         Self(src)
     }
 
@@ -75,7 +80,6 @@ impl<const N: usize> FixedBytes<N> {
         }
     }
 }
-
 
 impl<const N: usize> TryFrom<&[u8]> for FixedBytes<N> {
     type Error = core::array::TryFromSliceError;

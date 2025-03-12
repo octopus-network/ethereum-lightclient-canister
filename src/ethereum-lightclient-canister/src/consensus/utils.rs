@@ -4,7 +4,6 @@ use tree_hash::fixed_bytes::B256;
 use tree_hash::TreeHash;
 use tree_hash_derive::TreeHash;
 
-
 use crate::config::Forks;
 use helios_common::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use helios_common::rpc_types::bls::PublicKey;

@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
-use tree_hash::fixed_bytes::B256;
 use crate::rpc_types::bootstrap::SyncCommittee;
 use crate::rpc_types::lightclient_header::{LightClientHeader, SyncAggregate};
+use serde::{Deserialize, Serialize};
+use tree_hash::fixed_bytes::B256;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Update {

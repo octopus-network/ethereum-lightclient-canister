@@ -1,25 +1,28 @@
-
-use serde::{Deserialize, Serialize};
+use crate::rpc_types::receipt::TransactionReceipt;
 use helios_common::errors::RpcError;
 use helios_common::http::post;
+use serde::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::B256;
-use crate::rpc_types::receipt::TransactionReceipt;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct IcExecutionRpc {
     rpc: String,
 }
 
 impl IcExecutionRpc {
-    pub fn new(rpcx: &str) -> eyre::Result<Self> where Self: Sized {
-        Ok(
-            Self {
-                rpc: rpcx.to_string(),
-            }
-        )
+    pub fn new(rpcx: &str) -> eyre::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Self {
+            rpc: rpcx.to_string(),
+        })
     }
 
-   pub(crate) async fn get_block_receipts(&self, block_hash: B256) -> eyre::Result<Vec<TransactionReceipt>> {
+    pub(crate) async fn get_block_receipts(
+        &self,
+        block_hash: B256,
+    ) -> eyre::Result<Vec<TransactionReceipt>> {
         let real_hex = format!("0x{}", hex::encode(block_hash.0.as_slice()));
         let params = r#"{"id":1, "json_rpc":"2.0", "method": "eth_getBlockReceipts", "params":["block_hash"]}"#;
         let params = params.replace("block_hash", &real_hex);
@@ -27,26 +30,31 @@ impl IcExecutionRpc {
     }
 }
 
-async fn post_request<T>(name: impl AsRef<str>, body: String, url: impl AsRef<str>) -> eyre::Result<T>
-    where
-        T: serde::de::DeserializeOwned,
+async fn post_request<T>(
+    name: impl AsRef<str>,
+    body: String,
+    url: impl AsRef<str>,
+) -> eyre::Result<T>
+where
+    T: serde::de::DeserializeOwned,
 {
     let name = name.as_ref();
     let url = url.as_ref();
-    let resp =post(url, &[], body.as_bytes().to_vec()).await.map_err(|e| RpcError::new(name, e))?;
+    let resp = post(url, &[], body.as_bytes().to_vec())
+        .await
+        .map_err(|e| RpcError::new(name, e))?;
     if resp.status != 200 {
         let e = format!("http response with status {}", resp.status);
         Err(RpcError::new(name, e))?;
     }
-    let value: EvmRpcResponse<T> = serde_json::from_slice(&resp.body).map_err(|e| RpcError::new(name, e))?;
+    let value: EvmRpcResponse<T> =
+        serde_json::from_slice(&resp.body).map_err(|e| RpcError::new(name, e))?;
     if value.result.is_some() {
         Ok(value.result.unwrap())
-    }else {
+    } else {
         Err(RpcError::new(name, "result is null".to_string()))?
     }
 }
-
-
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct EvmJsonRpcRequest {

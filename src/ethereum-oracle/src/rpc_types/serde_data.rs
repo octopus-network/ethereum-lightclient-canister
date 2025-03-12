@@ -7,9 +7,9 @@ use std::marker::PhantomData;
 
 /// Serializes `data` as Ethereum hex string.
 pub fn serialize<S, T>(data: T, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-        T: ToHex,
+where
+    S: Serializer,
+    T: ToHex,
 {
     let mut buf = data.encode_hex::<String>();
     buf.insert_str(0, "0x");
@@ -18,17 +18,17 @@ pub fn serialize<S, T>(data: T, serializer: S) -> Result<S::Ok, S::Error>
 
 /// Deserializes an Ethereum data string into raw bytes.
 pub fn deserialize<'de, D, T>(deserializer: D) -> Result<T, D::Error>
-    where
-        D: Deserializer<'de>,
-        T: FromHex,
-        <T as FromHex>::Error: fmt::Display,
+where
+    D: Deserializer<'de>,
+    T: FromHex,
+    <T as FromHex>::Error: fmt::Display,
 {
     struct HexStrVisitor<T>(PhantomData<T>);
 
     impl<'de, T> Visitor<'de> for HexStrVisitor<T>
-        where
-            T: FromHex,
-            <T as FromHex>::Error: fmt::Display,
+    where
+        T: FromHex,
+        <T as FromHex>::Error: fmt::Display,
     {
         type Value = T;
 
@@ -37,8 +37,8 @@ pub fn deserialize<'de, D, T>(deserializer: D) -> Result<T, D::Error>
         }
 
         fn visit_str<E>(self, data: &str) -> Result<Self::Value, E>
-            where
-                E: Error,
+        where
+            E: Error,
         {
             if !data.starts_with("0x") {
                 return Err(Error::custom("Ethereum DATA doesn't start with 0x"));

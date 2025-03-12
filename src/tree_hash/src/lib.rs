@@ -1,13 +1,13 @@
+pub mod fixed_bytes;
 pub mod impls;
 mod merkle_hasher;
 mod merkleize_padded;
 mod merkleize_standard;
-pub mod fixed_bytes;
 pub mod u256;
-pub use u256::U256;
 pub use merkle_hasher::{Error, MerkleHasher};
 pub use merkleize_padded::merkleize_padded;
 pub use merkleize_standard::merkleize_standard;
+pub use u256::U256;
 
 use ethereum_hashing::{hash_fixed, ZERO_HASHES, ZERO_HASHES_MAX_INDEX};
 use smallvec::SmallVec;

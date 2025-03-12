@@ -4,15 +4,14 @@ use std::str::FromStr;
 use eyre::Result;
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
-use tree_hash::fixed_bytes::{B256, FixedBytes};
-
+use tree_hash::fixed_bytes::{FixedBytes, B256};
 
 use crate::config::base::BaseConfig;
-use crate::config::{Fork, Forks, ForkSchedule};
 use crate::config::ChainConfig;
+use crate::config::{Fork, ForkSchedule, Forks};
 
 #[derive(
-Debug, Clone, Copy, Serialize, Deserialize, EnumIter, Hash, Eq, PartialEq, PartialOrd, Ord,
+    Debug, Clone, Copy, Serialize, Deserialize, EnumIter, Hash, Eq, PartialEq, PartialOrd, Ord,
 )]
 pub enum Network {
     Mainnet,
@@ -51,14 +50,16 @@ impl Display for Network {
 pub fn mainnet() -> BaseConfig {
     BaseConfig {
         default_checkpoint: B256::from_hex(
-            "5ceacdb396b3531d7c2192ce7e233b22591689f12d703c8cf153c4af81a2c7cf"
+            "5ceacdb396b3531d7c2192ce7e233b22591689f12d703c8cf153c4af81a2c7cf",
         ),
         rpc_port: 8545,
         consensus_rpc: Some("https://ethereum.operationsolarstorm.org".to_string()),
         chain: ChainConfig {
             chain_id: 1,
             genesis_time: 1606824023,
-            genesis_root: B256::from_hex("4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95"),
+            genesis_root: B256::from_hex(
+                "4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95",
+            ),
         },
         forks: Forks {
             genesis: Fork {

@@ -1,10 +1,10 @@
 use crate::tree_hash::vec_tree_hash_root;
 use crate::Error;
+use candid_derive::CandidType;
 use serde::{Deserialize, Serialize, Serializer};
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::slice::SliceIndex;
-use candid_derive::CandidType;
 use tree_hash::Hash256;
 use typenum::Unsigned;
 
@@ -339,11 +339,15 @@ where
     }
 }
 
-impl<'de, T,N> Serialize for FixedVector<T, N> where
+impl<'de, T, N> Serialize for FixedVector<T, N>
+where
     T: Deserialize<'de> + Serialize,
     N: Unsigned,
 {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         Vec::<T>::serialize(&self.vec, serializer)
     }
 }

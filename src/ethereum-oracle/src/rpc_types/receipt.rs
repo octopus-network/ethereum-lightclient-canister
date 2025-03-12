@@ -1,8 +1,8 @@
+use crate::rpc_types::log::LogEntry;
 use candid::CandidType;
 use rlp::RlpStream;
 use serde_derive::{Deserialize, Serialize};
 use tree_hash::fixed_bytes::LogBloom;
-use crate::rpc_types::log::LogEntry;
 
 #[derive(Clone, Debug, PartialEq, Serialize, CandidType, Eq, Deserialize)]
 pub struct TransactionReceipt {
@@ -13,7 +13,11 @@ pub struct TransactionReceipt {
     #[serde(rename = "gasUsed")]
     pub gas_used: String,
 
-    #[serde(default, rename = "cumulativeGasUsed",with = "crate::rpc_types::serde_u64::u64")]
+    #[serde(
+        default,
+        rename = "cumulativeGasUsed",
+        with = "crate::rpc_types::serde_u64::u64"
+    )]
     pub cumulative_gas_used: u64,
     #[serde(with = "crate::rpc_types::serde_u64::opt_u64")]
     pub status: Option<u64>,
@@ -32,10 +36,8 @@ pub struct TransactionReceipt {
     pub r#type: Option<u64>,
 }
 
-
-
 pub fn encode_receipt(receipt: &TransactionReceipt) -> Vec<u8> {
-   let mut stream = RlpStream::new();
+    let mut stream = RlpStream::new();
     stream.begin_list(4);
     stream.append(&receipt.status.unwrap());
     stream.append(&receipt.cumulative_gas_used);

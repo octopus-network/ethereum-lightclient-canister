@@ -11,7 +11,7 @@ use crate::consensus_spec::{ConsensusSpec, MainnetConsensusSpec};
 use crate::rpc_types::address::Address;
 use crate::rpc_types::bls::Signature;
 
-#[derive(Debug, Default, Clone,PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LightClientHeader {
     pub beacon: BeaconBlockHeader,
     pub execution: ExecutionPayloadHeader,
@@ -56,11 +56,8 @@ pub struct BeaconBlockHeader {
     pub body_root: B256,
 }
 
-
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct SyncAggregate {
     pub sync_committee_bits: BitVector<<MainnetConsensusSpec as ConsensusSpec>::SyncCommitteeSize>,
     pub sync_committee_signature: Signature,
 }
-
-

@@ -1,7 +1,7 @@
 use eyre::{eyre, Result};
 use ic_bls12_381::{
-    G1Affine,
-    G1Projective, G2Affine, G2Prepared, G2Projective, Gt, hash_to_curve::{ExpandMsgXmd, HashToCurve}, multi_miller_loop, Scalar,
+    hash_to_curve::{ExpandMsgXmd, HashToCurve},
+    multi_miller_loop, G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, Scalar,
 };
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use tree_hash_derive::TreeHash;
@@ -14,18 +14,23 @@ pub struct PublicKey {
 }
 
 impl<'de> Deserialize<'de> for PublicKey {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let inner = ByteVector::<typenum::U48>::deserialize(deserializer)?;
-        Ok(Self {inner})
+        Ok(Self { inner })
     }
 }
 
 impl Serialize for PublicKey {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         ByteVector::<typenum::U48>::serialize(&self.inner, serializer)
     }
 }
-
 
 #[derive(Debug, Clone, Default, TreeHash)]
 pub struct Signature {
@@ -33,18 +38,23 @@ pub struct Signature {
 }
 
 impl<'de> Deserialize<'de> for Signature {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let inner = ByteVector::<typenum::U96>::deserialize(deserializer)?;
-        Ok(Self {inner})
+        Ok(Self { inner })
     }
 }
 
 impl Serialize for Signature {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         ByteVector::<typenum::U96>::serialize(&self.inner, serializer)
     }
 }
-
 
 impl PublicKey {
     fn point(&self) -> eyre::Result<G1Affine> {
@@ -172,9 +182,7 @@ fn hex_to_scalar(hex: &str) -> Option<Scalar> {
     Some(Scalar::from_raw(raw))
 }
 
-
 #[test]
 pub fn test() {
     let p:PublicKey = serde_json::from_str("0x93379f3a3f3798b634ab7642120ee4666fce038131fb6562dabfc00dd81ea9a396f5b690470869164c0f9a27db8a5203").unwrap();
-
 }

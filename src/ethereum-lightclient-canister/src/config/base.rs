@@ -2,9 +2,9 @@ use std::default::Default;
 use std::net::{IpAddr, Ipv4Addr};
 use std::path::PathBuf;
 
+use crate::config::{ChainConfig, Config, ForkSchedule, Forks};
 use serde::Serialize;
 use tree_hash::fixed_bytes::B256;
-use crate::config::{ChainConfig, Config, Forks, ForkSchedule};
 
 /// The base configuration for a network.
 #[derive(Serialize)]
@@ -39,8 +39,6 @@ impl Default for BaseConfig {
         }
     }
 }
-
-
 
 impl From<BaseConfig> for Config {
     fn from(base: BaseConfig) -> Self {

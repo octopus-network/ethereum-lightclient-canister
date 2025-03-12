@@ -1,8 +1,8 @@
-use std::borrow::Cow;
 use candid::{CandidType, Deserialize};
-use ic_stable_structures::Storable;
 use ic_stable_structures::storable::Bound;
+use ic_stable_structures::Storable;
 use serde::Serialize;
+use std::borrow::Cow;
 use tree_hash::fixed_bytes::B256;
 
 #[derive(Deserialize, Serialize, CandidType, PartialEq, Eq, Clone, Debug)]

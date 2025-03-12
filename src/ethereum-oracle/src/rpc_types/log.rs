@@ -1,11 +1,11 @@
 use bytes::Bytes;
 use candid::CandidType;
+use helios_common::rpc_types::address::Address;
 use rlp::{Encodable, RlpStream};
 use serde_derive::{Deserialize, Serialize};
-use helios_common::rpc_types::address::Address;
 use tree_hash::fixed_bytes::B256;
 
-#[derive(Debug, Clone, Deserialize,CandidType, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, CandidType, Serialize, PartialEq, Eq)]
 #[serde(transparent)]
 pub struct Data(#[serde(with = "crate::rpc_types::serde_data")] pub Vec<u8>);
 
@@ -26,7 +26,10 @@ pub struct LogEntry {
     pub transaction_hash: Option<B256>,
     // Integer of the transactions position within the block the log was created from.
     // None if the log is pending.
-    #[serde(rename = "transactionIndex", with = "crate::rpc_types::serde_u64::opt_u64")]
+    #[serde(
+        rename = "transactionIndex",
+        with = "crate::rpc_types::serde_u64::opt_u64"
+    )]
     pub transaction_index: Option<u64>,
     /// 32 Bytes - hash of the block in which this log appeared.
     /// None if the block is pending.
@@ -42,7 +45,6 @@ pub struct LogEntry {
     pub removed: bool,
 }
 
-
 impl Encodable for LogEntry {
     fn rlp_append(&self, s: &mut RlpStream) {
         s.begin_list(3);
@@ -50,6 +52,5 @@ impl Encodable for LogEntry {
         s.append_list(&self.topics);
         let by = Bytes::copy_from_slice(&self.data.0);
         s.append(&by);
-
     }
 }

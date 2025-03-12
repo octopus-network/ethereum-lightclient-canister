@@ -62,17 +62,16 @@ impl OracleState {
     }
 }
 
-
 pub fn mutate_state<F, R>(f: F) -> R
-    where
-        F: FnOnce(&mut OracleState) -> R,
+where
+    F: FnOnce(&mut OracleState) -> R,
 {
     STATE.with(|s| f(s.borrow_mut().as_mut().expect("State not initialized!")))
 }
 
 pub fn read_state<F, R>(f: F) -> R
-    where
-        F: FnOnce(&OracleState) -> R,
+where
+    F: FnOnce(&OracleState) -> R,
 {
     STATE.with(|s| f(s.borrow().as_ref().expect("State not initialized!")))
 }

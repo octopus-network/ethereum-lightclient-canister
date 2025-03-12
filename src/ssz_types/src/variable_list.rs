@@ -1,11 +1,11 @@
 use crate::tree_hash::vec_tree_hash_root;
 use crate::Error;
+use candid_derive::CandidType;
 use serde::Deserialize;
 use serde_derive::Serialize;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::slice::SliceIndex;
-use candid_derive::CandidType;
 use tree_hash::Hash256;
 use typenum::Unsigned;
 

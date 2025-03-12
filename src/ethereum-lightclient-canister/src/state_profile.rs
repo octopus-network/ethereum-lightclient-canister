@@ -2,7 +2,7 @@ use candid::CandidType;
 use serde::Deserialize;
 use serde_derive::Serialize;
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 pub struct FinalizedBlock {
     pub receipt_root: String,
     pub parent_block_hash: String,
@@ -10,14 +10,12 @@ pub struct FinalizedBlock {
     pub block_hash: String,
 }
 
-
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 pub struct AggregatePubkey {
     pub inner: String,
 }
 
-
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 pub struct Execution {
     pub parent_hash: String,
     pub fee_recipient: String,
@@ -38,7 +36,7 @@ pub struct Execution {
     pub excess_blob_gas: String,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 pub struct Beacon {
     pub slot: String,
     pub proposer_index: String,
@@ -47,14 +45,14 @@ pub struct Beacon {
     pub body_root: String,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 pub struct Struct1 {
     pub beacon: Beacon,
     pub execution: Execution,
     pub execution_branch: Vec<String>,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 pub struct Store {
     pub finalized_header: Struct1,
     pub optimistic_header: Struct1,
@@ -62,18 +60,18 @@ pub struct Store {
     pub current_max_active_participants: i64,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 struct ExecutionForks {
     pub prague_timestamp: i64,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 struct Struct {
     pub epoch: i64,
     pub fork_version: String,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 struct Forks {
     pub genesis: Struct,
     pub altair: Struct,
@@ -83,14 +81,14 @@ struct Forks {
     pub electra: Struct,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 struct Chain {
     pub chain_id: i64,
     pub genesis_time: i64,
     pub genesis_root: String,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 pub struct Config {
     pub consensus_rpc: String,
     pub execution_rpc: String,
@@ -101,7 +99,7 @@ pub struct Config {
     pub strict_checkpoint_age: bool,
 }
 
-#[derive(Serialize,  CandidType, Deserialize)]
+#[derive(Serialize, CandidType, Deserialize)]
 pub struct StateProfileView {
     pub config: Config,
     pub last_checkpoint: String,

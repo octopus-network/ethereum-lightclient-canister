@@ -14,7 +14,6 @@ pub struct SyncCommittee {
     pub aggregate_pubkey: PublicKey,
 }
 
-
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Bootstrap {
     pub header: LightClientHeader,

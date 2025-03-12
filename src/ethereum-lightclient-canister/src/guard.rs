@@ -6,8 +6,7 @@ pub struct TimerLogicGuard();
 impl TimerLogicGuard {
     pub fn new() -> Option<Self> {
         mutate_state(|s| {
-            let running = s
-                .is_timer_running;
+            let running = s.is_timer_running;
             if running {
                 return None;
             }

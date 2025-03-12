@@ -1,9 +1,9 @@
 use super::*;
+use crate::fixed_bytes::B256;
+use crate::u256::U256;
 use ssz::{Bitfield, Fixed, Variable};
 use std::sync::Arc;
 use typenum::Unsigned;
-use crate::fixed_bytes::B256;
-use crate::u256::U256;
 
 fn int_to_hash256(int: u64) -> Hash256 {
     let mut bytes = [0; HASHSIZE];
@@ -105,7 +105,6 @@ impl TreeHash for [u8; 48] {
         merkle_root(self, minimum_chunk_count)
     }
 }
-
 
 impl TreeHash for B256 {
     fn tree_hash_type() -> TreeHashType {

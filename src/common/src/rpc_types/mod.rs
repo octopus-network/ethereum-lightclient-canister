@@ -1,11 +1,11 @@
+pub mod address;
+pub mod block;
+pub mod bls;
 pub mod bootstrap;
+pub mod convert;
 pub mod finality_update;
 pub mod lightclient_header;
-pub mod block;
 pub mod lightclient_store;
-pub mod convert;
-pub mod update;
-pub mod serde_utils;
-pub mod address;
-pub mod bls;
 pub mod optimistic_update;
+pub mod serde_utils;
+pub mod update;
