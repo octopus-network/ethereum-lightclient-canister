@@ -143,14 +143,23 @@ impl StateModifier {
             let mut n = block_number;
 
             loop {
-                if let Ok(backfilled) = Self::backfill_behind(n).await {
-                    if !backfilled {
-                        break;
+
+                match  Self::backfill_behind(n).await {
+                    Ok(backfilled) => {
+                        if !backfilled {
+                            break;
+                        }
+                        n -= 1;
                     }
-                    n -= 1;
-                } else {
-                    Self::prune_before(n);
-                    break;
+                    Err(e) => {
+                        log!(INFO, "YYYYYYY {}, {}",n, e.to_string());
+                        if e.to_string().contains("retry") {
+                            continue;
+                        }
+                        Self::prune_before(n);
+                        break;
+
+                    }
                 }
             }
             let (link_child, link_parent) =
@@ -222,7 +231,9 @@ impl StateModifier {
                         )
                         .unwrap();
                         let parent_hash = block.parent_block_hash.clone();
-                        let backfilled = execution_rpc.get_block(parent_hash).await?;
+                        let Ok(backfilled) = execution_rpc.get_block(parent_hash).await else {
+                            return Err(eyre!("retry"));
+                        };
                         if block.parent_block_hash == backfilled.hash {
                             let rroot = backfilled.receipts_root;
                             let pphash = backfilled.parent_hash;
@@ -252,12 +263,12 @@ impl StateModifier {
         mutate_state(|s| {
             if let Some(old_block) = s.blocks.get(&block.block_number) {
                 if old_block.block_hash != block.block_hash {
+                    log!(INFO, "xxxxx {:?} {:?}", old_block.block_hash.clone(), old_block.block_hash.clone());
                     s.blocks.clear_new();
                 }
             }
             s.finalized_block = Some(block.clone());
         });
-        Self::push_block(block).await;
     }
 
     pub fn update_last_checkpoint(new_checkpoint: Option<B256>) {

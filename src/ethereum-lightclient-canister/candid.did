@@ -46,6 +46,7 @@ type FinalizedBlock = record {
   parent_block_hash : text;
 };
 type InitArgs = record { execution_rpc : text };
+type Result = variant { Ok; Err : text };
 type StateProfileView = record {
   history_length : int64;
   finalized_block : FinalizedBlock;
@@ -65,9 +66,9 @@ type Struct1 = record {
   execution : Execution;
 };
 service : (InitArgs) -> {
-  get_finality : (nat64) -> (opt BlockInfo) query;
   hashes : () -> (vec record { blob; nat64 }) query;
-  query_block : (text) -> (text);
-  set_up : () -> ();
+  query_block : (nat64) -> (BlockInfo) query;
+  query_receipt_height : (nat64, text) -> (Result) query;
+  set_up : (text) -> ();
   state : () -> (StateProfileView) query;
 }

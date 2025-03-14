@@ -39,10 +39,11 @@ async fn init(args: InitArgs) {
 }
 
 #[update]
-pub async fn set_up() {
+pub async fn set_up(check_point: String) {
+
     let store = read_state(|s| s.store.clone());
     let mut inner = Inner::<MainnetConsensusSpec>::new(store);
-    let c = read_state(|s| s.config.default_checkpoint);
+    let c =  B256::from_hex(check_point.as_str());
     let _ = inner.sync(c).await.unwrap();
     inner.store().await;
     mutate_state(|s| s.store = inner.store);
@@ -80,23 +81,31 @@ fn post_upgrade() {
     set_timer_interval(Duration::from_secs(12), lightclient_task);
 }
 
-#[update]
-pub async fn query_block(block_hash: String) -> String {
-    let rpc: IcExecutionRpc =
-        IcExecutionRpc::new("https://mainnet.infura.io/v3/025779c23a2d44d1b1ecef2bfb4f2b29")
-            .unwrap();
-    let b = B256::from_hex(block_hash.as_str());
-    serde_json::to_string(&rpc.get_block(b).await.unwrap()).unwrap()
+#[query]
+pub  fn query_block(height: u64) -> BlockInfo {
+    read_state(|s|s.blocks.get(&height).clone()).expect("none")
 }
 
 #[query]
-pub async fn get_finality(height: u64) -> Option<BlockInfo> {
-    read_state(|s| s.blocks.get(&height))
+pub fn hashes() -> BTreeMap<B256, u64> {
+    let r = read_state(|s|s.hashes.clone());
+    r
 }
-
 #[query]
-pub async fn hashes() -> BTreeMap<B256, u64> {
-    read_state(|s| s.hashes.clone())
+pub fn query_receipt_height(block_number: u64, except_root: String) -> Result<(), String> {
+    let Some(f) = read_state(|s|s.finalized_block.clone()) else {
+        return Err("Block not found".to_string());
+    };
+    if f.block_number >= block_number{
+        let bl = read_state(|s|s.blocks.get(&block_number)).unwrap();
+        let ex = B256::from_hex(except_root.as_str());
+        if bl.receipt_root != ex {
+            Err("check failed: lightclient check receipt root failed".to_string())
+        }else {
+            Ok(())
+        }
+    }else {
+        Err("block not finalized, please try later".to_string())
+    }
 }
-
 ic_cdk::export_candid!();
