@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::borrow::Cow;
 use tree_hash::fixed_bytes::B256;
 
-#[derive(Deserialize, Serialize, CandidType, PartialEq, Eq, Clone, Debug)]
+#[derive(Deserialize, Serialize, CandidType, PartialEq, Default, Eq, Clone, Debug)]
 pub struct BlockInfo {
     pub receipt_root: B256,
     pub parent_block_hash: B256,

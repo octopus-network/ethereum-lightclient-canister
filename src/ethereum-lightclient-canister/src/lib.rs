@@ -40,7 +40,6 @@ async fn init(args: InitArgs) {
 
 #[update]
 pub async fn set_up(check_point: String) {
-
     let store = read_state(|s| s.store.clone());
     let mut inner = Inner::<MainnetConsensusSpec>::new(store);
     let c =  B256::from_hex(check_point.as_str());
@@ -48,6 +47,7 @@ pub async fn set_up(check_point: String) {
     inner.store().await;
     mutate_state(|s| s.store = inner.store);
     set_timer_interval(Duration::from_secs(12), lightclient_task);
+
 }
 
 #[query(hidden = true)]
@@ -91,13 +91,28 @@ pub fn hashes() -> BTreeMap<B256, u64> {
     let r = read_state(|s|s.hashes.clone());
     r
 }
+
 #[query]
-pub fn query_receipt_height(block_number: u64, except_root: String) -> Result<(), String> {
+pub fn query_finality() -> Option<BlockInfo>{
+    read_state(|s|s.finalized_block.clone())
+}
+
+#[query]
+pub fn query_latest_block() -> Option<(u64, BlockInfo)>{
+    read_state(|s|s.blocks.last_key_value())
+}
+
+#[query]
+pub fn verify(block_number: u64, except_root: String) -> Result<(), String> {
     let Some(f) = read_state(|s|s.finalized_block.clone()) else {
         return Err("Block not found".to_string());
     };
+    let first = read_state(|s|s.blocks.first_key_value().unwrap_or_default().0);
     if f.block_number >= block_number{
-        let bl = read_state(|s|s.blocks.get(&block_number)).unwrap();
+        let Some(bl) = read_state(|s|s.blocks.get(&block_number)) else {
+            return Err(format!("block is expired, the blocks from {} to {} are avaliable now", first, f.block_number));
+        };
+
         let ex = B256::from_hex(except_root.as_str());
         if bl.receipt_root != ex {
             Err("check failed: lightclient check receipt root failed".to_string())
@@ -105,7 +120,7 @@ pub fn query_receipt_height(block_number: u64, except_root: String) -> Result<()
             Ok(())
         }
     }else {
-        Err("block not finalized, please try later".to_string())
+        Err(format!("block not finalized , the blocks from {} to {} are avaliable now, please try later!", first, f.block_number))
     }
 }
 ic_cdk::export_candid!();

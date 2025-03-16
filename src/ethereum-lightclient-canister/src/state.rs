@@ -81,6 +81,7 @@ pub struct LightClientState {
     pub history_length: u64,
     #[serde(skip)]
     pub is_timer_running: bool,
+    pub started: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -152,7 +153,7 @@ impl StateModifier {
                         n -= 1;
                     }
                     Err(e) => {
-                        log!(INFO, "YYYYYYY {}, {}",n, e.to_string());
+                        log!(INFO, "fallback_error: {}, {}",n, e.to_string());
                         if e.to_string().contains("retry") {
                             continue;
                         }
@@ -246,7 +247,7 @@ impl StateModifier {
                             mutate_state(|s| {
                                 s.blocks
                                     .insert(hex_to_u64(backfilled.number.as_str()), block_info);
-                                log!(INFO, "backfill block {}", backfilled.number);
+                                log!(INFO, "backfill block {}", u64::from_str_radix(&backfilled.number[2..], 16).unwrap_or_default());
                             });
                             Ok(true)
                         } else {
@@ -263,7 +264,7 @@ impl StateModifier {
         mutate_state(|s| {
             if let Some(old_block) = s.blocks.get(&block.block_number) {
                 if old_block.block_hash != block.block_hash {
-                    log!(INFO, "xxxxx {:?} {:?}", old_block.block_hash.clone(), old_block.block_hash.clone());
+                    log!(INFO, "forked: {:?} {:?}", old_block.block_hash.clone(), old_block.block_hash.clone());
                     s.blocks.clear_new();
                 }
             }
