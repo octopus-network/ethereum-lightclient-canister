@@ -71,7 +71,6 @@ where
         let e = format!("http response with status {}", resp.status);
         Err(RpcError::new(name, e))?;
     }
-    log!(INFO, " {} respbodysize: {}", name, &resp.body.len());
     let value = serde_json::from_slice(&resp.body).map_err(|e| RpcError::new(name, e))?;
     Ok(value)
 }

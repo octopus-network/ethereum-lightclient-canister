@@ -481,6 +481,7 @@ dependencies = [
  "hex",
  "ic-cdk 0.12.2",
  "ic_bls12_381",
+ "log",
  "rlp 0.6.1",
  "serde",
  "serde_json",

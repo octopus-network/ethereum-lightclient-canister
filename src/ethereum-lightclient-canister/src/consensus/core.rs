@@ -440,7 +440,11 @@ fn verify_sync_committee_signture(
 ) -> bool {
     let header_root = attested_header.tree_hash_root();
     let signing_root = compute_committee_sign_root(header_root, fork_data_root);
-    signature.verify(signing_root.as_slice(), pks)
+    let instruction_c1 = ic_cdk::api::instruction_counter();
+    let r = signature.verify(signing_root.as_slice(), pks);
+    let instruction_c2 = ic_cdk::api::instruction_counter();
+    log!(INFO, "bls signature instractions {} {} {}", instruction_c1, instruction_c2, instruction_c2 - instruction_c1);
+    r
 }
 
 fn safety_threshold<S: ConsensusSpec>(store: &LightClientStore) -> u64 {
