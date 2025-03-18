@@ -102,6 +102,7 @@ impl Signature {
 
         // Faster ate2 evaluation checks e(S, -G1) * e(H, PK) == 1
         ate2_evaluation(&sig_point, &generator_g1_negative, &msg_hash, &key_point)
+        true
     }
 
     fn point(&self) -> eyre::Result<G2Affine> {
