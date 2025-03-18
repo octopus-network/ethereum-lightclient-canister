@@ -45,6 +45,12 @@ type FinalizedBlock = record {
   receipt_root : text;
   parent_block_hash : text;
 };
+type HttpHeader = record { value : text; name : text };
+type HttpResponse = record {
+  status : nat;
+  body : blob;
+  headers : vec HttpHeader;
+};
 type InitArgs = record { execution_rpc : text };
 type Result = variant { Ok; Err : text };
 type StateProfileView = record {
@@ -65,12 +71,16 @@ type Struct1 = record {
   beacon : Beacon;
   execution : Execution;
 };
+type TransformArgs = record { context : blob; response : HttpResponse };
 service : (InitArgs) -> {
   hashes : () -> (vec record { blob; nat64 }) query;
   query_block : (nat64) -> (BlockInfo) query;
   query_finality : () -> (opt BlockInfo) query;
+  query_first_block : () -> (opt record { nat64; BlockInfo }) query;
   query_latest_block : () -> (opt record { nat64; BlockInfo }) query;
-  query_receipt_height : (nat64, text) -> (Result) query;
-  set_up : (text) -> ();
+  set_execution_url : (text) -> ();
+  set_up : (text) -> (Result);
   state : () -> (StateProfileView) query;
+  transform : (TransformArgs) -> (HttpResponse) query;
+  verify : (nat64, text) -> (Result) query;
 }

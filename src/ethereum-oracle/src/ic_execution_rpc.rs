@@ -24,7 +24,7 @@ impl IcExecutionRpc {
         block_hash: B256,
     ) -> eyre::Result<Vec<TransactionReceipt>> {
         let real_hex = format!("0x{}", hex::encode(block_hash.0.as_slice()));
-        let params = r#"{"id":1, "json_rpc":"2.0", "method": "eth_getBlockReceipts", "params":["block_hash"]}"#;
+        let params = r#"{"id":1, "jsonrpc":"2.0", "method": "eth_getBlockReceipts", "params":["block_hash"]}"#;
         let params = params.replace("block_hash", &real_hex);
         post_request("eth_getBlockReceipts", params, self.rpc.clone()).await
     }

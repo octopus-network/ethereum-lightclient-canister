@@ -5,6 +5,9 @@ use ic_cdk_timers::set_timer_interval;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::time::Duration;
+use ic_canister_log::log;
+use ic_cdk::api::management_canister::http_request;
+use ic_cdk::api::management_canister::http_request::TransformArgs;
 
 use tree_hash::fixed_bytes::B256;
 
@@ -17,6 +20,7 @@ use crate::state_profile::StateProfileView;
 use crate::storable_structures::BlockInfo;
 use crate::tasks::lightclient_task;
 use helios_common::consensus_spec::MainnetConsensusSpec;
+use crate::ic_log::INFO;
 
 mod config;
 mod consensus;
@@ -39,17 +43,36 @@ async fn init(args: InitArgs) {
 }
 
 #[update]
-pub async fn set_up(check_point: String) {
+pub async fn set_up(check_point: String) -> Result<(), String>{
+    if read_state(|s|s.started) {
+        return Err("set up can be called only once".to_string());
+    }
     let store = read_state(|s| s.store.clone());
     let mut inner = Inner::<MainnetConsensusSpec>::new(store);
     let c =  B256::from_hex(check_point.as_str());
     let _ = inner.sync(c).await.unwrap();
     inner.store().await;
-    mutate_state(|s| s.store = inner.store);
+    mutate_state(|s| {
+        s.store = inner.store;
+        s.started = true;
+    });
     set_timer_interval(Duration::from_secs(12), lightclient_task);
-
+    Ok(())
 }
 
+#[query]
+fn transform(raw: TransformArgs) -> http_request::HttpResponse {
+    http_request::HttpResponse {
+        status: raw.response.status.clone(),
+        body: raw.response.body.clone(),
+        headers: vec![],
+    }
+}
+
+#[update]
+fn set_execution_url(url: String) {
+    mutate_state(|s|s.config.execution_rpc = url);
+}
 #[query(hidden = true)]
 fn http_request(req: HttpRequest) -> HttpResponse {
     if ic_cdk::api::data_certificate().is_none() {
@@ -94,12 +117,18 @@ pub fn hashes() -> BTreeMap<B256, u64> {
 
 #[query]
 pub fn query_finality() -> Option<BlockInfo>{
+    log!(INFO, "query user");
     read_state(|s|s.finalized_block.clone())
 }
 
 #[query]
 pub fn query_latest_block() -> Option<(u64, BlockInfo)>{
     read_state(|s|s.blocks.last_key_value())
+}
+
+#[query]
+pub fn query_first_block() -> Option<(u64, BlockInfo)>{
+    read_state(|s|s.blocks.first_key_value())
 }
 
 #[query]

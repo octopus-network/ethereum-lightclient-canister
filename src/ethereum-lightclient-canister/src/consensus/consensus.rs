@@ -27,34 +27,6 @@ pub struct Inner<S: ConsensusSpec> {
     phantom_data: PhantomData<S>,
 }
 
-/*async fn sync_fallback<S: ConsensusSpec>(
-    inner: &mut Inner<S>,
-    fallback: &str,
-) -> Result<()> {
-    /*let checkpoint = CheckpointFallback::fetch_checkpoint_from_api(fallback).await?;
-    inner.sync(checkpoint).await*/
-    //TODO
-
-
-    Ok(())
-}
-
-async fn sync_all_fallbacks<S: ConsensusSpec>(
-    inner: &mut Inner<S>,
-    chain_id: u64,
-) -> Result<()> {
-/*    let network = Network::from_chain_id(chain_id)?;
-    let checkpoint = CheckpointFallback::new()
-        .build()
-        .await?
-        .fetch_latest_checkpoint(&network)
-        .await?;
-
-    inner.sync(checkpoint).await*/
-    //TODO
-    Ok(())
-}*/
-
 impl<S: ConsensusSpec> Inner<S> {
     pub fn new(store: LightClientStore) -> Inner<S> {
         Inner {
@@ -88,10 +60,10 @@ impl<S: ConsensusSpec> Inner<S> {
 
     pub async fn advance(&mut self) -> Result<()> {
         let finality_update = IcpConsensusRpc::get_finality_update().await?;
-        self.verify_finality_update(&finality_update)?;
+        //self.verify_finality_update(&finality_update)?;
         self.apply_finality_update(&finality_update);
 
-        if self.store.next_sync_committee.is_none() {
+/*        if self.store.next_sync_committee.is_none() {
             log!(INFO, "checking for sync committee update");
             let current_period =
                 calc_sync_period::<MainnetConsensusSpec>(self.store.finalized_header.beacon.slot);
@@ -106,7 +78,7 @@ impl<S: ConsensusSpec> Inner<S> {
                     self.apply_update(update);
                 }
             }
-        }
+        }*/
 
         Ok(())
     }

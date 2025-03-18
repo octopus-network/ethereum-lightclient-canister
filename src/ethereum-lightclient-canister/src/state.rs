@@ -33,6 +33,7 @@ impl LightClientState {
             finalized_block: None,
             history_length: 72000,
             is_timer_running: false,
+            started: false,
         };
         ret
     }
@@ -81,6 +82,7 @@ pub struct LightClientState {
     pub history_length: u64,
     #[serde(skip)]
     pub is_timer_running: bool,
+    #[serde(default)]
     pub started: bool,
 }
 
@@ -142,11 +144,11 @@ impl StateModifier {
         let block_number = block.block_number;
         if Self::try_insert_tip(block) {
             let mut n = block_number;
-
+            let mut retry_times:u32 = 0;
             loop {
-
                 match  Self::backfill_behind(n).await {
                     Ok(backfilled) => {
+                        retry_times = 0;
                         if !backfilled {
                             break;
                         }
@@ -154,12 +156,15 @@ impl StateModifier {
                     }
                     Err(e) => {
                         log!(INFO, "fallback_error: {}, {}",n, e.to_string());
-                        if e.to_string().contains("retry") {
+                       if e.to_string().contains("retry") {
+                            if retry_times > 3 {
+                                break;
+                            }
+                            retry_times +=1;
                             continue;
                         }
                         Self::prune_before(n);
                         break;
-
                     }
                 }
             }
@@ -232,9 +237,12 @@ impl StateModifier {
                         )
                         .unwrap();
                         let parent_hash = block.parent_block_hash.clone();
-                        let Ok(backfilled) = execution_rpc.get_block(parent_hash).await else {
+                        let blk = execution_rpc.get_block(parent_hash).await;
+                        if blk.is_err() {
+                            log!(INFO, "backfill error: {}", blk.err().unwrap().to_string());
                             return Err(eyre!("retry"));
-                        };
+                        }
+                        let backfilled = blk.unwrap();
                         if block.parent_block_hash == backfilled.hash {
                             let rroot = backfilled.receipts_root;
                             let pphash = backfilled.parent_hash;
